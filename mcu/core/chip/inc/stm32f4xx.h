@@ -303,9 +303,9 @@ extern "C"
 #endif /* __cplusplus */
 
 #endif /* __STM32F4xx_H */
-       /**
-        * @}
-        */
+/**
+ * @}
+ */
 
 /**
  * @}
