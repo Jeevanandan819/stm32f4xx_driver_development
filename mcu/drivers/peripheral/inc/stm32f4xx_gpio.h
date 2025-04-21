@@ -110,20 +110,6 @@ typedef enum
     GPIO_ALT_FN_LAST/**< Indicator for the end of GPIO alternate functions */
 } st_gpio_alt_fn_t;
 
-/**
- * @brief Enumeration for GPIO pull configuration.
- * 
- * This enum defines the possible pull configurations for GPIO pins.
- */
-typedef enum
-{
-    GPIO_PULLUP,    /**< Pull-up resistor enabled */
-    GPIO_PULLDOWN,  /**< Pull-down resistor enabled */
-    GPIO_NOPULL,    /**< No pull-up or pull-down resistor */
-    GPIO_PUPD_LAST  /**< Indicator for the end of GPIO pull configurations */
-} st_gpio_pupd_config_t;
-
-
 typedef enum {
     GPIO_A,
     GPIO_B,

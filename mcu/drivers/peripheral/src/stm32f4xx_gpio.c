@@ -1,4 +1,5 @@
 #include "stm32f4xx_gpio.h"
+#include <stddef.h>
 
 static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port);
 
@@ -11,11 +12,11 @@ static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port);
  */
 st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_mode_t mode)
 {
-    if (pin < GPIO0 || pin >= GPIO_PIN_LAST) {
+    if (pin >= GPIO_PIN_LAST) {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
-    if (mode < INPUT || mode >= GPIO_MODE_LAST) {
+    if (mode >= GPIO_MODE_LAST) {
         return ST_STATUS_INVALID_PARAMETER;
     }
     pGPIO->MODER &= ~(3 << (2 * pin));
@@ -32,11 +33,11 @@ st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_mode
  */
 st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_otype_t otype)
 {
-    if (pin < GPIO0 || pin >= GPIO_PIN_LAST) {
+    if (pin >= GPIO_PIN_LAST) {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
-    if (otype < GPIO_PUSH_PULL || otype >= GPIO_OTYPE_LAST) {
+    if (otype >= GPIO_OTYPE_LAST) {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
@@ -54,11 +55,11 @@ st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_otype_
  */
 st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_speed_t ospeed)
 {
-    if (pin < GPIO0 || pin >= GPIO_PIN_LAST) {
+    if (pin >= GPIO_PIN_LAST) {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
-    if (ospeed < GPIO_SPEED_LOW || ospeed >= GPIO_SPEED_LAST) {
+    if (ospeed >= GPIO_SPEED_LAST) {
         return ST_STATUS_INVALID_PARAMETER;
     }
     pGPIO->OSPEEDR &= ~(3 << (2 * pin));
@@ -75,11 +76,11 @@ st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_spe
  */
 st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_pupd_config_t pupd_config)
 {
-    if (pin < GPIO0 || pin >= GPIO_PIN_LAST) {
+    if (pin >= GPIO_PIN_LAST) {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
-    if (pupd_config < GPIO_PULLUP || pupd_config >= GPIO_PUPD_LAST) {
+    if (pupd_config >= GPIO_PUPD_LAST) {
         return ST_STATUS_INVALID_PARAMETER;
     }
     pGPIO->PUPDR &= ~(3 << (2 * pin));
@@ -96,7 +97,7 @@ st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_pupd
  */
 st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_fn_t alt_fn)
 {
-
+    return ST_STATUS_OK;
 }
 
 /**
@@ -113,5 +114,31 @@ st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_
  */
 st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
 {
+    return ST_STATUS_OK;
+}
 
+static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port)
+{
+    GPIO_TypeDef *pGPIO = NULL;
+    switch (port) {
+        case GPIO_A:
+            pGPIO = GPIOA;
+            break;
+        case GPIO_B:
+            pGPIO = GPIOB;
+            break;
+        case GPIO_C:
+            pGPIO = GPIOC;
+            break;
+        case GPIO_D:
+            pGPIO = GPIOD;
+            break;
+        case GPIO_E:
+            pGPIO = GPIOB;
+            break;
+        default:
+            pGPIO = NULL;
+            break;
+    }
+    return pGPIO;
 }

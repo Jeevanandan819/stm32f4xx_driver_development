@@ -27,6 +27,7 @@ set(sources_SRCS ${sources_SRCS}
 	${CMAKE_CURRENT_SOURCE_DIR}/Src/syscall.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Src/sysmem.c
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/core/chip/src/system_stm32f4xx.c
+	${CMAKE_CURRENT_SOURCE_DIR}/mcu/drivers/peripheral/src/stm32f4xx_gpio.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Startup/startup_stm32f411retx.s
 )
 
