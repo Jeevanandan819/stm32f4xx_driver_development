@@ -134,9 +134,10 @@ typedef enum {
  */
 typedef struct {
     st_gpio_port_t port;              /**< GPIO port (e.g., GPIO_A, GPIO_B). */
-    st_gpio_t gpio_num;               /**< GPIO pin number. */
+    st_gpio_t pin;                    /**< GPIO pin number. */
     st_gpio_mode_t mode;              /**< GPIO pin mode (input, output, alternate, etc.). */
     st_gpio_otype_t otype;            /**< GPIO output type (push-pull or open-drain). */
+    st_gpio_speed_t ospeed;           /**< GPIO output speed (low, medium, fast etc.). */
     st_gpio_pupd_config_t pupd_config;/**< GPIO pull-up/pull-down configuration. */
     st_gpio_alt_fn_t alt_fn;          /**< GPIO alternate function (if applicable). */
 } st_gpio_config_t;
@@ -185,6 +186,46 @@ st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_pupd
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
 st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_fn_t alt_fn);
+
+/**
+ * @brief Sets the value of a specific GPIO pin.
+ *
+ * This function allows you to set the value (high or low) of a specific pin
+ * in a GPIO port.
+ *
+ * @param[in] pGPIO Pointer to the GPIO port structure.
+ * @param[in] pin The pin number within the GPIO port.
+ * @param[in] value The value to set (0 for low, 1 for high).
+ *
+ * @return Status of the operation (success or error).
+ */
+st_status_t st_gpio_set_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t value);
+
+/**
+ * @brief Toggles the state of a specific GPIO pin.
+ *
+ * This function toggles the current state (high/low) of a specific pin
+ * in a GPIO port.
+ *
+ * @param[in] pGPIO Pointer to the GPIO port structure.
+ * @param[in] pin The pin number within the GPIO port.
+ *
+ * @return Status of the operation (success or error).
+ */
+st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
+
+/**
+ * @brief Retrieves the current state of a specific GPIO pin.
+ *
+ * This function reads and returns the current state (high or low) of 
+ * a specific GPIO pin in the given GPIO port.
+ *
+ * @param[in] pGPIO Pointer to the GPIO port structure.
+ * @param[in] pin The pin number within the GPIO port to be read.
+ *
+ * @return The current state of the pin (0 for low, 1 for high).
+ */
+uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
 
 /**
  * @brief  Set the configuration for a GPIO pin.

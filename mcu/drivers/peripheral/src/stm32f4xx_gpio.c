@@ -12,13 +12,11 @@ static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port);
  */
 st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_mode_t mode)
 {
-    if (pin >= GPIO_PIN_LAST) {
+    if (pin >= GPIO_PIN_LAST || mode >= GPIO_MODE_LAST || pGPIO == NULL)
+    {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
-    if (mode >= GPIO_MODE_LAST) {
-        return ST_STATUS_INVALID_PARAMETER;
-    }
     pGPIO->MODER &= ~(3 << (2 * pin));
     pGPIO->MODER |= (mode << (2 * pin));
     return ST_STATUS_OK;
@@ -33,11 +31,8 @@ st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_mode
  */
 st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_otype_t otype)
 {
-    if (pin >= GPIO_PIN_LAST) {
-        return ST_STATUS_INVALID_PARAMETER;
-    }
-
-    if (otype >= GPIO_OTYPE_LAST) {
+    if (pin >= GPIO_PIN_LAST || otype >= GPIO_OTYPE_LAST || pGPIO == NULL)
+    {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
@@ -55,13 +50,11 @@ st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_otype_
  */
 st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_speed_t ospeed)
 {
-    if (pin >= GPIO_PIN_LAST) {
+    if (pin >= GPIO_PIN_LAST || ospeed >= GPIO_SPEED_LAST || pGPIO == NULL)
+    {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
-    if (ospeed >= GPIO_SPEED_LAST) {
-        return ST_STATUS_INVALID_PARAMETER;
-    }
     pGPIO->OSPEEDR &= ~(3 << (2 * pin));
     pGPIO->OSPEEDR |= (ospeed << (2 * pin));
     return ST_STATUS_OK;
@@ -76,13 +69,11 @@ st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_spe
  */
 st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_pupd_config_t pupd_config)
 {
-    if (pin >= GPIO_PIN_LAST) {
+    if (pin >= GPIO_PIN_LAST || pupd_config >= GPIO_PUPD_LAST || pGPIO == NULL)
+    {
         return ST_STATUS_INVALID_PARAMETER;
     }
 
-    if (pupd_config >= GPIO_PUPD_LAST) {
-        return ST_STATUS_INVALID_PARAMETER;
-    }
     pGPIO->PUPDR &= ~(3 << (2 * pin));
     pGPIO->PUPDR |= (pupd_config << (2 * pin));
     return ST_STATUS_OK;
@@ -97,16 +88,93 @@ st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_pupd
  */
 st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_fn_t alt_fn)
 {
+    if (pin >= GPIO_PIN_LAST || alt_fn >= GPIO_ALT_FN_LAST || pGPIO == NULL)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    pGPIO->AFR[pin / 8] &= ~(0x0F << (pin * 4));
+    pGPIO->AFR[pin / 8] |= (alt_fn << (pin * 4));
     return ST_STATUS_OK;
 }
 
 /**
+ * @brief Sets the value of a specific GPIO pin.
+ *
+ * This function allows you to set the value (high or low) of a specific pin
+ * in a GPIO port.
+ *
+ * @param[in] pGPIO Pointer to the GPIO port structure.
+ * @param[in] pin The pin number within the GPIO port.
+ * @param[in] value The value to set (0 for low, 1 for high).
+ *
+ * @return Status of the operation (success or error).
+ */
+st_status_t st_gpio_set_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t value)
+{
+    if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+
+    if (value)
+    {
+        pGPIO->ODR |= (1 << pin);
+    }
+    else
+    {
+        pGPIO->ODR &= ~(1 << pin);
+    }
+    return ST_STATUS_OK;
+}
+
+/**
+ * @brief Toggles the state of a specific GPIO pin.
+ *
+ * This function toggles the current state (high/low) of a specific pin
+ * in a GPIO port.
+ *
+ * @param[in] pGPIO Pointer to the GPIO port structure.
+ * @param[in] pin The pin number within the GPIO port.
+ *
+ * @return Status of the operation (success or error).
+ */
+st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin)
+{
+    if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    pGPIO->ODR ^= (1 << pin);
+    return ST_STATUS_OK;
+}
+
+/**
+ * @brief Retrieves the current state of a specific GPIO pin.
+ *
+ * This function reads and returns the current state (high or low) of
+ * a specific GPIO pin in the given GPIO port.
+ *
+ * @param[in] pGPIO Pointer to the GPIO port structure.
+ * @param[in] pin The pin number within the GPIO port to be read.
+ *
+ * @return The current state of the pin (0 for low, 1 for high).
+ */
+uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin)
+{
+    if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    return (pGPIO->IDR >> pin) & 1;
+}
+
+/**
  * @brief  Set the configuration for a GPIO pin.
- * 
+ *
  * This API configures various settings for a specific GPIO pin, including mode,
  * output type, pull-up/pull-down configuration, and alternate function, using
  * a configuration structure.
- * 
+ *
  * @param  gpio_config: Pointer to a structure containing the GPIO configuration.
  * @retval st_status_t: Status of the operation. Possible values include:
  *          - ST_SUCCESS: Configuration completed successfully.
@@ -114,31 +182,74 @@ st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_
  */
 st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
 {
+    // if (gpio_config->pin >= GPIO_PIN_LAST || gpio_config->mode >= GPIO_MODE_LAST || 
+    //     gpio_config->otype >= GPIO_OTYPE_LAST || gpio_config->port >= GPIO_PORT_LAST || 
+    //     gpio_config->pupd_config >= GPIO_PUPD_LAST || gpio_config->alt_fn >= GPIO_ALT_FN_LAST ||
+    //     gpio_config->ospeed >= GPIO_SPEED_LAST)
+    // {
+    //     return ST_STATUS_INVALID_PARAMETER;
+    // }
+    GPIO_TypeDef *pGPIO = get_gpio_base_address(gpio_config->port);
+    if (pGPIO == NULL) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    st_status_t status;
+    status = st_gpio_config_mode(pGPIO, gpio_config->pin, gpio_config->mode);
+    if (status != ST_STATUS_OK) {
+        return status;
+    }
+
+    if (gpio_config->mode == OUTPUT || gpio_config->mode == ALT_FN_MODE) {
+        status = st_gpio_set_otype(pGPIO, gpio_config->pin, gpio_config->otype);
+        if (status != ST_STATUS_OK) {
+            return status;
+        }
+        status = st_gpio_config_speed(pGPIO, gpio_config->pin, gpio_config->ospeed);
+        if (status != ST_STATUS_OK) {
+            return status;
+        }
+    }
+
+    status = st_gpio_config_pupd(pGPIO, gpio_config->pin, gpio_config->pupd_config);
+    if (status != ST_STATUS_OK) {
+        return status;
+    }
+
+    if (gpio_config->mode == ALT_FN_MODE) {
+        status = st_gpio_set_pin_mux(pGPIO, gpio_config->pin, gpio_config->alt_fn);
+        if (status != ST_STATUS_OK) {
+            return status;
+        }
+    }
     return ST_STATUS_OK;
 }
 
 static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port)
 {
     GPIO_TypeDef *pGPIO = NULL;
-    switch (port) {
-        case GPIO_A:
-            pGPIO = GPIOA;
-            break;
-        case GPIO_B:
-            pGPIO = GPIOB;
-            break;
-        case GPIO_C:
-            pGPIO = GPIOC;
-            break;
-        case GPIO_D:
-            pGPIO = GPIOD;
-            break;
-        case GPIO_E:
-            pGPIO = GPIOB;
-            break;
-        default:
-            pGPIO = NULL;
-            break;
+    switch (port)
+    {
+    case GPIO_A:
+        pGPIO = GPIOA;
+        break;
+    case GPIO_B:
+        pGPIO = GPIOB;
+        break;
+    case GPIO_C:
+        pGPIO = GPIOC;
+        break;
+    case GPIO_D:
+        pGPIO = GPIOD;
+        break;
+    case GPIO_E:
+        pGPIO = GPIOE;
+        break;
+    case GPIO_H:
+        pGPIO = GPIOH;
+        break;
+    default:
+        pGPIO = NULL;
+        break;
     }
     return pGPIO;
 }
