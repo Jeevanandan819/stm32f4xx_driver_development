@@ -261,6 +261,40 @@ st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
     return ST_STATUS_OK;
 }
 
+/**
+ * @brief Configures an interrupt for a specific GPIO pin.
+ *
+ * This function sets up the interrupt trigger conditions for the specified 
+ * GPIO pin, allowing it to respond to external events such as rising edges, 
+ * falling edges, or both.
+ *
+ * @param[in] gpio_port_pin Pointer to the GPIO port and pin structure.
+ * @param[in] intr_flag Interrupt trigger type, specified using 
+ *                       st_gpio_intr_flag_t (rising edge, falling edge, or both).
+ *
+ * @return Status of the configuration operation (success or error).
+ */
+st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag)
+{
+    GPIO_TypeDef *pGPIO = get_gpio_base_address(gpio_port_pin->port);
+    if (gpio_port_pin->pin >= GPIO_PIN_LAST || pGPIO == NULL) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    EXTI->IMR |= (1 << gpio_port_pin->pin);
+    if (intr_flag == GPIO_INTR_FALL_EDGE) {
+        EXTI->FTSR |= (1 << gpio_port_pin->pin);
+    } else if (intr_flag == GPIO_INTR_RISE_EDGE) {
+        EXTI->RTSR |= (1 << gpio_port_pin->pin);
+    } else {
+        EXTI->FTSR |= (1 << gpio_port_pin->pin);
+        EXTI->RTSR |= (1 << gpio_port_pin->pin);
+    }
+    EXTI->PR |= (1 << gpio_port_pin->pin);
+    SYSCFG->EXTICR[gpio_port_pin->pin/4] &= ~(0xF << (gpio_port_pin->pin % 4) * 4);
+    SYSCFG->EXTICR[gpio_port_pin->pin/4] |= (gpio_port_pin->port << (gpio_port_pin->pin % 4) * 4);
+    return ST_STATUS_OK;
+}
+
 static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port)
 {
     GPIO_TypeDef *pGPIO = NULL;

@@ -288,18 +288,34 @@ st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8
  */
 st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config);
 
-// st_status_t st_gpio_config_interrupt()
+/**
+ * @brief Configures an interrupt for a specific GPIO pin.
+ *
+ * This function sets up the interrupt trigger conditions for the specified 
+ * GPIO pin, allowing it to respond to external events such as rising edges, 
+ * falling edges, or both.
+ *
+ * @param[in] gpio_port_pin Pointer to the GPIO port and pin structure.
+ * @param[in] intr_flag Interrupt trigger type, specified using 
+ *                       st_gpio_intr_flag_t (rising edge, falling edge, or both).
+ *
+ * @return Status of the configuration operation (success or error).
+ */
+st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag);
 
-#define GPIOA_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 0))
-#define GPIOB_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 1))
-#define GPIOC_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 2))
-#define GPIOD_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 3))
-#define GPIOE_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 4))
-#define GPIOH_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 7))
+#define GPIOA_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 0))
+#define GPIOB_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 1))
+#define GPIOC_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 2))
+#define GPIOD_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 3))
+#define GPIOE_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 4))
+#define GPIOH_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 7))
 
-#define GPIOA_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 0))
-#define GPIOB_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 1))
-#define GPIOC_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 2))
-#define GPIOD_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 3))
-#define GPIOE_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 4))
-#define GPIOH_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 7))
+#define GPIOA_PERI_CLK_DIS()        (RCC->AHB1ENR &= ~(1 << 0))
+#define GPIOB_PERI_CLK_DIS()        (RCC->AHB1ENR &= ~(1 << 1))
+#define GPIOC_PERI_CLK_DIS()        (RCC->AHB1ENR &= ~(1 << 2))
+#define GPIOD_PERI_CLK_DIS()        (RCC->AHB1ENR &= ~(1 << 3))
+#define GPIOE_PERI_CLK_DIS()        (RCC->AHB1ENR &= ~(1 << 4))
+#define GPIOH_PERI_CLK_DIS()        (RCC->AHB1ENR &= ~(1 << 7))
+
+#define SYSCFG_PERI_CLK_EN()        (RCC->APB2ENR |= (1 << 14))
+#define SYSCFG_PERI_CLK_DIS()       (RCC->APB2ENR &= ~(1 << 14))
