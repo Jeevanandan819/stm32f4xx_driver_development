@@ -37,7 +37,7 @@ typedef enum
     GPIO14,        /**< GPIO pin 14 */
     GPIO15,        /**< GPIO pin 15 */
     GPIO_PIN_LAST      /**< Indicator for the end of GPIO pins */
-} st_gpio_t;
+} st_gpio_pin_t;
 
 /**
  * @brief Enumeration for GPIO modes.
@@ -121,20 +121,42 @@ typedef enum
     GPIO_ALT_FN_LAST/**< Indicator for the end of GPIO alternate functions */
 } st_gpio_alt_fn_t;
 
+/**
+ * @brief Enum representing GPIO port identifiers.
+ *
+ * This enumeration lists the available GPIO ports on the microcontroller.
+ * Each value corresponds to a specific GPIO port.
+ */
 typedef enum {
-    GPIO_A,
-    GPIO_B,
-    GPIO_C,
-    GPIO_D,
-    GPIO_E,
-    GPIO_F,
-    GPIO_G,
-    GPIO_H,
-    GPIO_I,
-    GPIO_J,
-    GPIO_K,
-    GPIO_PORT_LAST
-}st_gpio_port_t;
+    GPIO_A,          /**< GPIO Port A */
+    GPIO_B,          /**< GPIO Port B */
+    GPIO_C,          /**< GPIO Port C */
+    GPIO_D,          /**< GPIO Port D */
+    GPIO_E,          /**< GPIO Port E */
+    GPIO_F,          /**< GPIO Port F */
+    GPIO_G,          /**< GPIO Port G */
+    GPIO_H,          /**< GPIO Port H */
+    GPIO_I,          /**< GPIO Port I */
+    GPIO_J,          /**< GPIO Port J */
+    GPIO_K,          /**< GPIO Port K */
+    GPIO_PORT_LAST   /**< Last entry marker for GPIO ports */
+} st_gpio_port_t;
+
+/**
+ * @brief Enum representing GPIO interrupt trigger types.
+ *
+ * This enumeration specifies the possible trigger conditions for GPIO interrupts.
+ */
+typedef enum {
+    GPIO_INTR_RISE_EDGE,       /**< Interrupt triggered on rising edge */
+    GPIO_INTR_FALL_EDGE,       /**< Interrupt triggered on falling edge */
+    GPIO_INTR_RISE_FALL_EDGE   /**< Interrupt triggered on both rising and falling edges */
+} st_gpio_intr_flag_t;
+
+typedef struct {
+    st_gpio_port_t port;
+    st_gpio_pin_t pin;
+}st_gpio_t;
 
 /**
  * @brief  Structure to hold the GPIO configuration parameters.
@@ -145,7 +167,7 @@ typedef enum {
  */
 typedef struct {
     st_gpio_port_t port;              /**< GPIO port (e.g., GPIO_A, GPIO_B). */
-    st_gpio_t pin;                    /**< GPIO pin number. */
+    st_gpio_pin_t pin;                    /**< GPIO pin number. */
     st_gpio_mode_t mode;              /**< GPIO pin mode (input, output, alternate, etc.). */
     st_gpio_otype_t otype;            /**< GPIO output type (push-pull or open-drain). */
     st_gpio_speed_t ospeed;           /**< GPIO output speed (low, medium, fast etc.). */
@@ -156,47 +178,47 @@ typedef struct {
 /**
  * @brief  Configure the mode of a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  mode: Mode to configure (of type st_gpio_mode_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_mode_t mode);
+st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_mode_t mode);
 
 /**
  * @brief  Set the output type of a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  otype: Output type to set (of type st_gpio_otype_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_otype_t otype);
+st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_otype_t otype);
 
 /**
  * @brief  Configure the speed of a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  ospeed: Speed to configure (of type st_gpio_speed_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_speed_t ospeed);
+st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_speed_t ospeed);
 
 /**
  * @brief  Configure the pull-up or pull-down resistor for a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  pupd_config: Pull-up/pull-down configuration (of type st_gpio_pupd_config_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_pupd_config_t pupd_config);
+st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_pupd_config_t pupd_config);
 
 /**
  * @brief  Configure the alternate function (pin multiplexing) for a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  alt_fn: Alternate function to set (of type st_gpio_alt_fn_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_fn_t alt_fn);
+st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_alt_fn_t alt_fn);
 
 /**
  * @brief Sets the value of a specific GPIO pin.
@@ -210,7 +232,7 @@ st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_
  *
  * @return Status of the operation (success or error).
  */
-st_status_t st_gpio_set_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t value);
+st_status_t st_gpio_set_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8_t value);
 
 /**
  * @brief Toggles the state of a specific GPIO pin.
@@ -223,7 +245,7 @@ st_status_t st_gpio_set_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t value);
  *
  * @return Status of the operation (success or error).
  */
-st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
+st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin);
 
 /**
  * @brief Retrieves the current state of a specific GPIO pin.
@@ -236,7 +258,7 @@ st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
  *
  * @return The current state of the pin (0 for low, 1 for high).
  */
-uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
+uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin);
 
 /**
  * @brief Sets or resets a specific GPIO pin in the given GPIO port.
@@ -250,7 +272,7 @@ uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
  *
  * @return Status of the operation (success or error).
  */
-st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t set);
+st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8_t set);
 
 /**
  * @brief  Set the configuration for a GPIO pin.
@@ -265,6 +287,8 @@ st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t s
  *          - ST_ERROR: An error occurred during configuration (e.g., invalid parameters).
  */
 st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config);
+
+// st_status_t st_gpio_config_interrupt()
 
 #define GPIOA_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 0))
 #define GPIOB_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 1))

@@ -17,11 +17,11 @@ static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port);
 /**
  * @brief  Configure the mode of a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  mode: Mode to configure (of type st_gpio_mode_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_mode_t mode)
+st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_mode_t mode)
 {
     if (pin >= GPIO_PIN_LAST || mode >= GPIO_MODE_LAST || pGPIO == NULL)
     {
@@ -36,11 +36,11 @@ st_status_t st_gpio_config_mode(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_mode
 /**
  * @brief  Set the output type of a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  otype: Output type to set (of type st_gpio_otype_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_otype_t otype)
+st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_otype_t otype)
 {
     if (pin >= GPIO_PIN_LAST || otype >= GPIO_OTYPE_LAST || pGPIO == NULL)
     {
@@ -55,11 +55,11 @@ st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_otype_
 /**
  * @brief  Configure the speed of a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  ospeed: Speed to configure (of type st_gpio_speed_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_speed_t ospeed)
+st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_speed_t ospeed)
 {
     if (pin >= GPIO_PIN_LAST || ospeed >= GPIO_SPEED_LAST || pGPIO == NULL)
     {
@@ -74,11 +74,11 @@ st_status_t st_gpio_config_speed(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_spe
 /**
  * @brief  Configure the pull-up or pull-down resistor for a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  pupd_config: Pull-up/pull-down configuration (of type st_gpio_pupd_config_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_pupd_config_t pupd_config)
+st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_pupd_config_t pupd_config)
 {
     if (pin >= GPIO_PIN_LAST || pupd_config >= GPIO_PUPD_LAST || pGPIO == NULL)
     {
@@ -93,11 +93,11 @@ st_status_t st_gpio_config_pupd(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_pupd
 /**
  * @brief  Configure the alternate function (pin multiplexing) for a GPIO pin.
  * @param  pGPIO: Pointer to the GPIO peripheral (e.g., GPIOA, GPIOB).
- * @param  pin: GPIO pin to configure (of type st_gpio_t).
+ * @param  pin: GPIO pin to configure (of type st_gpio_pin_t).
  * @param  alt_fn: Alternate function to set (of type st_gpio_alt_fn_t).
  * @retval st_status_t: Status of the operation (e.g., success or failure).
  */
-st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_fn_t alt_fn)
+st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_alt_fn_t alt_fn)
 {
     if (pin >= GPIO_PIN_LAST || alt_fn >= GPIO_ALT_FN_LAST || pGPIO == NULL)
     {
@@ -120,7 +120,7 @@ st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_t pin, st_gpio_alt_
  *
  * @return Status of the operation (success or error).
  */
-st_status_t st_gpio_set_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t value)
+st_status_t st_gpio_set_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8_t value)
 {
     if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
     {
@@ -149,7 +149,7 @@ st_status_t st_gpio_set_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t value)
  *
  * @return Status of the operation (success or error).
  */
-st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin)
+st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin)
 {
     if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
     {
@@ -170,7 +170,7 @@ st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin)
  *
  * @return The current state of the pin (0 for low, 1 for high).
  */
-uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin)
+uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin)
 {
     if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
     {
@@ -191,7 +191,7 @@ uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin)
  *
  * @return Status of the operation (success or error).
  */
-st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t set)
+st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8_t set)
 {
     if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
     {
