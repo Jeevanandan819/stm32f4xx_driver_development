@@ -17,16 +17,15 @@
  */
 
 #include <stdint.h>
-#include "stm32f4xx.h"
+#include "stm32f4xx_gpio.h"
 
 int main(void)
 {
-    RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOAEN);
-    GPIOA->MODER |= (1 << 10);
-    GPIOA->MODER &= ~(1 << 11);
+    GPIOA_PERI_CLK_EN();
+    st_gpio_config_mode(GPIOA, GPIO5, OUTPUT);
 
     while (1) {
-        GPIOA->ODR ^= (1 << 5);
+        st_gpio_toggle_pin(GPIOA, GPIO5);
         for (int i=0; i<0xFFFFF; i++);
     }
 }

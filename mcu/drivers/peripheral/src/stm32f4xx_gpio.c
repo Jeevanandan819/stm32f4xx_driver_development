@@ -1,3 +1,14 @@
+/**
+ * @file stm32f4xx_gpio.c
+ * @brief Example header file contains the definitions of GPIO peripheral of NUCLEO-F411RE
+ *
+ * @author Jeevanandan Sandan
+ * @date April 23, 2025
+ *
+ * This file contains the implementation of GPIO peripheral functionality and 
+ * is maintained by Team Alpha. For queries or issues, contact the code owner.
+ */
+
 #include "stm32f4xx_gpio.h"
 #include <stddef.h>
 
@@ -166,6 +177,32 @@ uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin)
         return ST_STATUS_INVALID_PARAMETER;
     }
     return (pGPIO->IDR >> pin) & 1;
+}
+
+/**
+ * @brief Sets or resets a specific GPIO pin in the given GPIO port.
+ *
+ * This function allows you to either set (make high) or reset (make low) 
+ * the state of a specific pin in a GPIO port.
+ *
+ * @param[in] pGPIO Pointer to the GPIO port structure.
+ * @param[in] pin The pin number within the GPIO port to be modified.
+ * @param[in] set The action to perform (0 to reset the pin, 1 to set the pin).
+ *
+ * @return Status of the operation (success or error).
+ */
+st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t set)
+{
+    if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    if (set) {
+        pGPIO->BSRR |= (1 << pin);
+    } else {
+        pGPIO->BSRR |= (1 << (pin + 16));
+    }
+    return ST_STATUS_OK;
 }
 
 /**

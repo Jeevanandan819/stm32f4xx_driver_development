@@ -1,3 +1,14 @@
+/**
+ * @file stm32f4xx_gpio.h
+ * @brief Example header file contains the declarations of GPIO peripheral API prototyping.
+ *
+ * @author Jeevanandan Sandan
+ * @date April 23, 2025
+ *
+ * This file contains the implementation of GPIO peripheral functionality and 
+ * is maintained by Team Alpha. For queries or issues, contact the code owner.
+ */
+
 #include "stm32f4xx.h"
 #include "st_status.h"
 
@@ -228,6 +239,20 @@ st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
 uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
 
 /**
+ * @brief Sets or resets a specific GPIO pin in the given GPIO port.
+ *
+ * This function allows you to either set (make high) or reset (make low) 
+ * the state of a specific pin in a GPIO port.
+ *
+ * @param[in] pGPIO Pointer to the GPIO port structure.
+ * @param[in] pin The pin number within the GPIO port to be modified.
+ * @param[in] set The action to perform (0 to reset the pin, 1 to set the pin).
+ *
+ * @return Status of the operation (success or error).
+ */
+st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_t pin, uint8_t set);
+
+/**
  * @brief  Set the configuration for a GPIO pin.
  * 
  * This API configures various settings for a specific GPIO pin, including mode,
@@ -240,3 +265,17 @@ uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_t pin);
  *          - ST_ERROR: An error occurred during configuration (e.g., invalid parameters).
  */
 st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config);
+
+#define GPIOA_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 0))
+#define GPIOB_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 1))
+#define GPIOC_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 2))
+#define GPIOD_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 3))
+#define GPIOE_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 4))
+#define GPIOH_PERI_CLK_EN() (RCC->AHB1ENR |= (1 << 7))
+
+#define GPIOA_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 0))
+#define GPIOB_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 1))
+#define GPIOC_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 2))
+#define GPIOD_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 3))
+#define GPIOE_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 4))
+#define GPIOH_PERI_CLK_DIS() (RCC->AHB1ENR &= ~(1 << 7))
