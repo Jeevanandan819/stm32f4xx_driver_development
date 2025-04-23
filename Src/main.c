@@ -17,15 +17,35 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "stm32f4xx_gpio.h"
+
+volatile bool is_btn_triggered = false; 
 
 int main(void)
 {
     GPIOA_PERI_CLK_EN();
-    st_gpio_config_mode(GPIOA, GPIO5, OUTPUT);
+    GPIOC_PERI_CLK_EN();
+    SYSCFG_PERI_CLK_EN();
 
-    while (1) {
-        st_gpio_toggle_pin(GPIOA, GPIO5);
-        for (int i=0; i<0xFFFFF; i++);
+    st_gpio_t btn = {GPIO_C, GPIO13};
+    st_gpio_config_mode(GPIOA, GPIO5, OUTPUT);
+    st_gpio_config_mode(GPIOC, btn.pin, INPUT);
+
+    st_gpio_config_interrupt(&btn, GPIO_INTR_RISE_EDGE);
+    NVIC_EnableIRQ(EXTI15_10_IRQn);
+    NVIC_SetPriority(EXTI15_10_IRQn, 1);
+
+    while (true) {
+        if (is_btn_triggered) {
+            st_gpio_toggle_pin(GPIOA, GPIO5);
+            is_btn_triggered = false;
+        }
     }
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+    is_btn_triggered = true;
+    EXTI->PR |= (1 << 13);
 }
