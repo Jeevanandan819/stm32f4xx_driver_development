@@ -20,7 +20,8 @@
 #include <stdbool.h>
 #include "stm32f4xx_gpio.h"
 
-volatile bool is_btn_triggered = false; 
+static volatile bool is_btn_triggered = false;
+static void btn_callback(uint8_t pin);
 
 int main(void)
 {
@@ -32,7 +33,7 @@ int main(void)
     st_gpio_config_mode(GPIOA, GPIO5, OUTPUT);
     st_gpio_config_mode(GPIOC, btn.pin, INPUT);
 
-    st_gpio_config_interrupt(&btn, GPIO_INTR_RISE_EDGE);
+    st_gpio_config_interrupt(&btn, GPIO_INTR_RISE_EDGE, btn_callback);
     NVIC_EnableIRQ(EXTI15_10_IRQn);
     NVIC_SetPriority(EXTI15_10_IRQn, 1);
 
@@ -44,8 +45,7 @@ int main(void)
     }
 }
 
-void EXTI15_10_IRQHandler(void)
+static void btn_callback(uint8_t pin)
 {
     is_btn_triggered = true;
-    EXTI->PR |= (1 << 13);
 }
