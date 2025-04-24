@@ -231,6 +231,10 @@ st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
     // {
     //     return ST_STATUS_INVALID_PARAMETER;
     // }
+    if (gpio_config == NULL)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
     GPIO_TypeDef *pGPIO = get_gpio_base_address(gpio_config->port);
     if (pGPIO == NULL)
     {
@@ -289,6 +293,10 @@ st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
  */
 st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag, st_gpio_intr_callback callback_function)
 {
+    if (gpio_port_pin == NULL)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
     GPIO_TypeDef *pGPIO = get_gpio_base_address(gpio_port_pin->port);
     if (gpio_port_pin->pin >= GPIO_PIN_LAST || pGPIO == NULL || callback_function == NULL)
     {
