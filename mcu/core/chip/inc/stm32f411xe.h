@@ -576,13 +576,57 @@ typedef struct
 
 typedef struct
 {
-    __IO uint32_t SR;   /*!< USART Status register,                   Address offset: 0x00 */
-    __IO uint32_t DR;   /*!< USART Data register,                     Address offset: 0x04 */
-    __IO uint32_t BRR;  /*!< USART Baud rate register,                Address offset: 0x08 */
-    __IO uint32_t CR1;  /*!< USART Control register 1,                Address offset: 0x0C */
-    __IO uint32_t CR2;  /*!< USART Control register 2,                Address offset: 0x10 */
-    __IO uint32_t CR3;  /*!< USART Control register 3,                Address offset: 0x14 */
-    __IO uint32_t GTPR; /*!< USART Guard time and prescaler register, Address offset: 0x18 */
+    union {
+        __IO uint32_t SR;   /*!< USART Status register,     Address offset: 0x00 */
+        struct {
+            __IM uint32_t PE:1;
+            __IM uint32_t FE:1;
+            __IM uint32_t NF:1;
+            __IM uint32_t ORE:1;
+            __IM uint32_t IDLE:1;
+            __IM uint32_t RXNE:1;
+            __IM uint32_t TC:1;
+            __IM uint32_t TXE:1;
+            __IM uint32_t LBD:1;
+            __IM uint32_t CTS:1;
+        } SR_b;
+    };
+    union {
+        __IO uint32_t DR;   /*!< USART Status register,     Address offset: 0x00 */
+        struct {
+            
+        } DR_b;
+    };
+    union {
+        __IO uint32_t BRR;   /*!< USART Status register,    Address offset: 0x00 */
+        struct {
+            
+        } BRR_b;
+    };
+    union {
+        __IO uint32_t CR1;   /*!< USART Status register,    Address offset: 0x00 */
+        struct {
+            
+        } CR1_b;
+    };
+    union {
+        __IO uint32_t CR2;   /*!< USART Status register,    Address offset: 0x00 */
+        struct {
+            
+        } CR2_b;
+    };
+    union {
+        __IO uint32_t CR3;   /*!< USART Status register,    Address offset: 0x00 */
+        struct {
+            
+        } CR3_b;
+    };
+    union {
+        __IO uint32_t GTPR;   /*!< USART Status register,   Address offset: 0x00 */
+        struct {
+            
+        } GTPR_b;
+    };
 } USART_TypeDef;
 
 /**
