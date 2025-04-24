@@ -5,14 +5,16 @@
  * @author Jeevanandan Sandan
  * @date April 23, 2025
  *
- * This file contains the implementation of GPIO peripheral functionality and 
+ * This file contains the implementation of GPIO peripheral functionality and
  * is maintained by Team Alpha. For queries or issues, contact the code owner.
  */
 
 #include "stm32f4xx_gpio.h"
 #include <stddef.h>
 
-static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port);
+static GPIO_TypeDef *get_gpio_base_address(st_gpio_port_t port);
+static void st_gpio_clear_interrupt(uint8_t channel);
+static st_gpio_intr_callback gpio_intr_callbacks[16];
 
 /**
  * @brief  Configure the mode of a GPIO pin.
@@ -182,7 +184,7 @@ uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin)
 /**
  * @brief Sets or resets a specific GPIO pin in the given GPIO port.
  *
- * This function allows you to either set (make high) or reset (make low) 
+ * This function allows you to either set (make high) or reset (make low)
  * the state of a specific pin in a GPIO port.
  *
  * @param[in] pGPIO Pointer to the GPIO port structure.
@@ -197,9 +199,12 @@ st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8
     {
         return ST_STATUS_INVALID_PARAMETER;
     }
-    if (set) {
+    if (set)
+    {
         pGPIO->BSRR |= (1 << pin);
-    } else {
+    }
+    else
+    {
         pGPIO->BSRR |= (1 << (pin + 16));
     }
     return ST_STATUS_OK;
@@ -219,42 +224,50 @@ st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8
  */
 st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
 {
-    // if (gpio_config->pin >= GPIO_PIN_LAST || gpio_config->mode >= GPIO_MODE_LAST || 
-    //     gpio_config->otype >= GPIO_OTYPE_LAST || gpio_config->port >= GPIO_PORT_LAST || 
+    // if (gpio_config->pin >= GPIO_PIN_LAST || gpio_config->mode >= GPIO_MODE_LAST ||
+    //     gpio_config->otype >= GPIO_OTYPE_LAST || gpio_config->port >= GPIO_PORT_LAST ||
     //     gpio_config->pupd_config >= GPIO_PUPD_LAST || gpio_config->alt_fn >= GPIO_ALT_FN_LAST ||
     //     gpio_config->ospeed >= GPIO_SPEED_LAST)
     // {
     //     return ST_STATUS_INVALID_PARAMETER;
     // }
     GPIO_TypeDef *pGPIO = get_gpio_base_address(gpio_config->port);
-    if (pGPIO == NULL) {
+    if (pGPIO == NULL)
+    {
         return ST_STATUS_INVALID_PARAMETER;
     }
     st_status_t status;
     status = st_gpio_config_mode(pGPIO, gpio_config->pin, gpio_config->mode);
-    if (status != ST_STATUS_OK) {
+    if (status != ST_STATUS_OK)
+    {
         return status;
     }
 
-    if (gpio_config->mode == OUTPUT || gpio_config->mode == ALT_FN_MODE) {
+    if (gpio_config->mode == OUTPUT || gpio_config->mode == ALT_FN_MODE)
+    {
         status = st_gpio_set_otype(pGPIO, gpio_config->pin, gpio_config->otype);
-        if (status != ST_STATUS_OK) {
+        if (status != ST_STATUS_OK)
+        {
             return status;
         }
         status = st_gpio_config_speed(pGPIO, gpio_config->pin, gpio_config->ospeed);
-        if (status != ST_STATUS_OK) {
+        if (status != ST_STATUS_OK)
+        {
             return status;
         }
     }
 
     status = st_gpio_config_pupd(pGPIO, gpio_config->pin, gpio_config->pupd_config);
-    if (status != ST_STATUS_OK) {
+    if (status != ST_STATUS_OK)
+    {
         return status;
     }
 
-    if (gpio_config->mode == ALT_FN_MODE) {
+    if (gpio_config->mode == ALT_FN_MODE)
+    {
         status = st_gpio_set_pin_mux(pGPIO, gpio_config->pin, gpio_config->alt_fn);
-        if (status != ST_STATUS_OK) {
+        if (status != ST_STATUS_OK)
+        {
             return status;
         }
     }
@@ -264,38 +277,45 @@ st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
 /**
  * @brief Configures an interrupt for a specific GPIO pin.
  *
- * This function sets up the interrupt trigger conditions for the specified 
- * GPIO pin, allowing it to respond to external events such as rising edges, 
+ * This function sets up the interrupt trigger conditions for the specified
+ * GPIO pin, allowing it to respond to external events such as rising edges,
  * falling edges, or both.
  *
  * @param[in] gpio_port_pin Pointer to the GPIO port and pin structure.
- * @param[in] intr_flag Interrupt trigger type, specified using 
+ * @param[in] intr_flag Interrupt trigger type, specified using
  *                       st_gpio_intr_flag_t (rising edge, falling edge, or both).
  *
  * @return Status of the configuration operation (success or error).
  */
-st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag)
+st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag, st_gpio_intr_callback callback_function)
 {
     GPIO_TypeDef *pGPIO = get_gpio_base_address(gpio_port_pin->port);
-    if (gpio_port_pin->pin >= GPIO_PIN_LAST || pGPIO == NULL) {
+    if (gpio_port_pin->pin >= GPIO_PIN_LAST || pGPIO == NULL || callback_function == NULL)
+    {
         return ST_STATUS_INVALID_PARAMETER;
     }
     EXTI->IMR |= (1 << gpio_port_pin->pin);
-    if (intr_flag == GPIO_INTR_FALL_EDGE) {
+    if (intr_flag == GPIO_INTR_FALL_EDGE)
+    {
         EXTI->FTSR |= (1 << gpio_port_pin->pin);
-    } else if (intr_flag == GPIO_INTR_RISE_EDGE) {
+    }
+    else if (intr_flag == GPIO_INTR_RISE_EDGE)
+    {
         EXTI->RTSR |= (1 << gpio_port_pin->pin);
-    } else {
+    }
+    else
+    {
         EXTI->FTSR |= (1 << gpio_port_pin->pin);
         EXTI->RTSR |= (1 << gpio_port_pin->pin);
     }
     EXTI->PR |= (1 << gpio_port_pin->pin);
-    SYSCFG->EXTICR[gpio_port_pin->pin/4] &= ~(0xF << (gpio_port_pin->pin % 4) * 4);
-    SYSCFG->EXTICR[gpio_port_pin->pin/4] |= (gpio_port_pin->port << (gpio_port_pin->pin % 4) * 4);
+    SYSCFG->EXTICR[gpio_port_pin->pin / 4] &= ~(0xF << (gpio_port_pin->pin % 4) * 4);
+    SYSCFG->EXTICR[gpio_port_pin->pin / 4] |= (gpio_port_pin->port << (gpio_port_pin->pin % 4) * 4);
+    gpio_intr_callbacks[gpio_port_pin->pin] = callback_function;
     return ST_STATUS_OK;
 }
 
-static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port)
+static GPIO_TypeDef *get_gpio_base_address(st_gpio_port_t port)
 {
     GPIO_TypeDef *pGPIO = NULL;
     switch (port)
@@ -323,4 +343,53 @@ static GPIO_TypeDef* get_gpio_base_address(st_gpio_port_t port)
         break;
     }
     return pGPIO;
+}
+
+static void st_gpio_clear_interrupt(uint8_t channel)
+{
+    EXTI->PR |= (1 << channel);
+}
+
+void EXTI0_IRQHandler(void)
+{
+    st_gpio_clear_interrupt(GPIO0);
+    gpio_intr_callbacks[GPIO0](GPIO0);
+}
+
+void EXTI1_IRQHandler(void)
+{
+    st_gpio_clear_interrupt(GPIO1);
+    gpio_intr_callbacks[GPIO1](GPIO1);
+}
+
+void EXTI2_IRQHandler(void)
+{
+    st_gpio_clear_interrupt(GPIO2);
+    gpio_intr_callbacks[GPIO2](GPIO2);
+}
+
+void EXTI3_IRQHandler(void)
+{
+    st_gpio_clear_interrupt(GPIO3);
+    gpio_intr_callbacks[GPIO3](GPIO3);
+}
+
+void EXTI4_IRQHandler(void)
+{
+    st_gpio_clear_interrupt(GPIO4);
+    gpio_intr_callbacks[GPIO4](GPIO4);
+}
+
+void EXTI9_5_IRQHandler(void)
+{
+    int channel = __builtin_ctz(EXTI->PR);
+    st_gpio_clear_interrupt(channel);
+    gpio_intr_callbacks[channel]((uint8_t)channel);
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+    int channel = __builtin_ctz(EXTI->PR);
+    st_gpio_clear_interrupt(channel);
+    gpio_intr_callbacks[channel]((uint8_t)channel);
 }

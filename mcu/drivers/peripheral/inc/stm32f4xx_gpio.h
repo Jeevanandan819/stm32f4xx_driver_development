@@ -12,6 +12,8 @@
 #include "stm32f4xx.h"
 #include "st_status.h"
 
+typedef void(*st_gpio_intr_callback)(uint8_t pin);
+
 /**
  * @brief Enumeration for GPIO pin numbers.
  * 
@@ -289,19 +291,21 @@ st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8
 st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config);
 
 /**
- * @brief Configures an interrupt for a specific GPIO pin.
+ * @brief Configures an interrupt for a specific GPIO pin and assigns a callback function.
  *
  * This function sets up the interrupt trigger conditions for the specified 
- * GPIO pin, allowing it to respond to external events such as rising edges, 
- * falling edges, or both.
+ * GPIO pin and associates a user-defined callback function that will be 
+ * invoked whenever the interrupt occurs.
  *
  * @param[in] gpio_port_pin Pointer to the GPIO port and pin structure.
  * @param[in] intr_flag Interrupt trigger type, specified using 
- *                       st_gpio_intr_flag_t (rising edge, falling edge, or both).
+ *                       st_gpio_intr_flag_t (e.g., rising edge, falling edge, or both).
+ * @param[in] callback_function Pointer to the user-defined callback function 
+ *                               to be executed when the interrupt triggers.
  *
  * @return Status of the configuration operation (success or error).
  */
-st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag);
+st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag, st_gpio_intr_callback callback_function);
 
 #define GPIOA_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 0))
 #define GPIOB_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 1))
