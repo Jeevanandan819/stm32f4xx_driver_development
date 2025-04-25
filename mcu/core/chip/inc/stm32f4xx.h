@@ -122,6 +122,7 @@ extern "C"
      * @{
      */
 #define STM32F411xE
+typedef uint8_t boolean_t;
 
 #if defined(STM32F405xx)
 #include "stm32f405xx.h"
