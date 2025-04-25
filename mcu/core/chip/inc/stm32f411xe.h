@@ -589,42 +589,87 @@ typedef struct
             __IM uint32_t TXE:1;
             __IM uint32_t LBD:1;
             __IM uint32_t CTS:1;
+            __IOM uint32_t RESERVED1:22;
         } SR_b;
     };
     union {
         __IO uint32_t DR;   /*!< USART Status register,     Address offset: 0x00 */
         struct {
-            
+            __IOM uint32_t DR:9;
+            __IOM uint32_t RESERVED1:23;
         } DR_b;
     };
     union {
         __IO uint32_t BRR;   /*!< USART Status register,    Address offset: 0x00 */
         struct {
-            
+            __IOM uint32_t DIV_FRAC:4;
+            __IOM uint32_t DIV_MANTISSA:12;
+            __IOM uint32_t RESERVED1:16;
         } BRR_b;
     };
     union {
         __IO uint32_t CR1;   /*!< USART Status register,    Address offset: 0x00 */
         struct {
-            
+            __IOM uint32_t SBK:1;
+            __IOM uint32_t RWU:1;
+            __IOM uint32_t RE:1;
+            __IOM uint32_t TE:1;
+            __IOM uint32_t IDLEIE:1;
+            __IOM uint32_t RXNEIE:1;
+            __IOM uint32_t TCIE:1;
+            __IOM uint32_t TXEIE:1;
+            __IOM uint32_t PEIE:1;
+            __IOM uint32_t PS:1;
+            __IOM uint32_t PCE:1;
+            __IOM uint32_t WAKE:1;
+            __IOM uint32_t M:1;
+            __IOM uint32_t UE:1;
+            __IOM uint32_t RESERVED1:1;
+            __IOM uint32_t OVER8:1;
+            __IOM uint32_t RESERVED2:16;
         } CR1_b;
     };
     union {
         __IO uint32_t CR2;   /*!< USART Status register,    Address offset: 0x00 */
         struct {
-            
+            __IOM uint32_t ADD:4;
+            __IOM uint32_t RESERVED1:1;
+            __IOM uint32_t LBDL:1;
+            __IOM uint32_t LBDIE:1;
+            __IOM uint32_t RESERVED2:1;
+            __IOM uint32_t LBCL:1;
+            __IOM uint32_t CPHA:1;
+            __IOM uint32_t CPOL:1;
+            __IOM uint32_t CLKEN:1;
+            __IOM uint32_t STOP:2;
+            __IOM uint32_t LINEN:1;
+            __IOM uint32_t RESERVED3:17;
         } CR2_b;
     };
     union {
         __IO uint32_t CR3;   /*!< USART Status register,    Address offset: 0x00 */
         struct {
-            
+            __IOM uint32_t EIE:1;
+            __IOM uint32_t IREN:1;
+            __IOM uint32_t IRLP:1;
+            __IOM uint32_t HDSEL:1;
+            __IOM uint32_t NACK:1;
+            __IOM uint32_t SCEN:1;
+            __IOM uint32_t DMAR:1;
+            __IOM uint32_t DMAT:1;
+            __IOM uint32_t RTSE:1;
+            __IOM uint32_t CTSE:1;
+            __IOM uint32_t CTSIE:1;
+            __IOM uint32_t ONEBIT:1;
+            __IOM uint32_t RESERVED1:20;
         } CR3_b;
     };
     union {
         __IO uint32_t GTPR;   /*!< USART Status register,   Address offset: 0x00 */
         struct {
-            
+            __IOM uint32_t PSC:8;
+            __IOM uint32_t GT:8;
+            __IOM uint32_t RESERVED1:16;
         } GTPR_b;
     };
 } USART_TypeDef;
