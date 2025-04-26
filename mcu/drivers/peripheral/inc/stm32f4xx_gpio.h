@@ -160,6 +160,12 @@ typedef struct {
     st_gpio_pin_t pin;
 }st_gpio_t;
 
+typedef struct {
+    st_gpio_port_t port;
+    st_gpio_pin_t pin;
+    st_gpio_alt_fn_t alt_fn;
+} st_peripheral_io_t;
+
 /**
  * @brief  Structure to hold the GPIO configuration parameters.
  * 
