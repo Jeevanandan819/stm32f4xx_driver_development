@@ -9,7 +9,8 @@
                 "${default}",
                 "${workspaceFolder}/mcu/core/chip/inc",
                 "${workspaceFolder}/mcu/drivers/peripheral/inc",
-                "${workspaceFolder}/mcu/core/common/inc"
+                "${workspaceFolder}/mcu/core/common/inc",
+                "${workspaceFolder}/config"
             ]
         }
     ]

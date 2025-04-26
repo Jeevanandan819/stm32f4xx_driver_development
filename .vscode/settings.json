@@ -3,6 +3,10 @@
         "stm32f411xe.h": "c",
         "system_stm32f4xx.h": "c",
         "st_status.h": "c",
-        "stm32f4xx_gpio.h": "c"
+        "stm32f4xx_gpio.h": "c",
+        "stm32f4xx_usart.h": "c",
+        "cstdlib": "c",
+        "rte_device_stm32f4xx.h": "c",
+        "stm32f4xx.h": "c"
     },
 }

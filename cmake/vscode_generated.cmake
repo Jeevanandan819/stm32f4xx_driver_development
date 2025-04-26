@@ -39,6 +39,7 @@ set(include_c_DIRS ${include_c_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/device/ST/STM32F4xx/inc
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/drivers/peripheral/inc
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/drivers/service/inc
+	${CMAKE_CURRENT_SOURCE_DIR}/config
 	${CMAKE_CURRENT_SOURCE_DIR}/Inc
 )
 set(include_cxx_DIRS ${include_cxx_DIRS}
