@@ -6,8 +6,10 @@
  * and using a USART peripheral.
  */
 
+#include <stdbool.h>
 #include "stm32f4xx.h"
 #include "st_status.h"
+#include "RTE_Device_STM32F4xx.h"
 
 /**
  * @brief Callback function type for USART events.
@@ -29,7 +31,7 @@ typedef enum
 {
     USART_1, /**< USART instance 1 */
     USART_2, /**< USART instance 2 */
-    USART_6  /**< USART instance 6 */
+    USART_6 /**< USART instance 6 */
 } st_usart_instance_t;
 
 /**
@@ -72,7 +74,8 @@ typedef enum
     USART_STOP_BIT_1,   /**< 1 stop bit */
     USART_STOP_BIT_0_5, /**< 0.5 stop bit */
     USART_STOP_BIT_2,   /**< 2 stop bits */
-    USART_STOP_BIT_1_5  /**< 1.5 stop bits */
+    USART_STOP_BIT_1_5,  /**< 1.5 stop bits */
+    USART_STOP_BIT_LAST
 } st_usart_stop_bit_t;
 
 /**
@@ -85,7 +88,8 @@ typedef enum
     USART_CPOL0_CPHA0, /**< Clock polarity 0 and clock phase 0 */
     USART_CPOL0_CPHA1, /**< Clock polarity 0 and clock phase 1 */
     USART_CPOL1_CPHA0, /**< Clock polarity 1 and clock phase 0 */
-    USART_CPOL1_CPHA1  /**< Clock polarity 1 and clock phase 1 */
+    USART_CPOL1_CPHA1,  /**< Clock polarity 1 and clock phase 1 */
+    USART_CLOCK_MODE_LAST
 } st_usart_clock_mode_t;
 
 /**
@@ -102,8 +106,26 @@ typedef struct
     st_usart_stop_bit_t stop_bits;    /**< Stop bits configuration */
     st_usart_clock_mode_t clock_mode; /**< Clock mode for synchronous operation */
     uint32_t baudrate;                /**< Baudrate for communication */
-    boolean_t is_flow_control_enable; /**< Enable or disable hardware flow control */
+    bool is_flow_control_enable; /**< Enable or disable hardware flow control */
 } st_usart_config_t;
+
+typedef struct {
+    st_peripheral_io_t tx;
+    st_peripheral_io_t rx;
+    st_peripheral_io_t cts;
+    st_peripheral_io_t rts;
+} st_usart_io_t;
+
+typedef enum {
+    USART_STATE_RESET             = 0x00U,    // Peripheral not initialized
+    USART_STATE_READY             = 0x01U,    // Peripheral initialized and ready for use
+    USART_STATE_BUSY              = 0x02U,    // Process ongoing
+    USART_STATE_BUSY_TX           = 0x12U,    // Data Transmission ongoing
+    USART_STATE_BUSY_RX           = 0x22U,    // Data Reception ongoing
+    USART_STATE_BUSY_TX_RX        = 0x32U,    // Data Transmission and Reception ongoing
+    USART_STATE_TIMEOUT           = 0x03U,    // Timeout state
+    USART_STATE_ERROR             = 0x04U     // Error occurred
+} st_usart_state_t;
 
 /**
  * @brief Initialize the specified USART instance.
@@ -208,3 +230,71 @@ st_status_t st_usart_receive_data_non_blocking(st_usart_instance_t instance, uin
  * @return st_status_t status code indicating success or error.
  */
 st_status_t st_usart_deinit(st_usart_instance_t instance);
+
+#define RCC_USART2_PERI_CLK_EN()        (RCC->APB1ENR |= 1 << RCC_APB1ENR_USART2EN_Pos)
+#define RCC_USART2_PERI_CLK_DIS()       (RCC->APB1ENR &= ~(1 << RCC_APB1ENR_USART2EN_Pos))
+#define RCC_USART1_PERI_CLK_EN()        (RCC->APB2ENR |= (1 << RCC_APB2ENR_USART1EN_Pos))
+#define RCC_USART1_PERI_CLK_DIS()       (RCC->APB2ENR &= ~(1 << RCC_APB2ENR_USART1EN_Pos))
+#define RCC_USART6_PERI_CLK_EN()        (RCC->APB2ENR |= (1 << RCC_APB2ENR_USART6EN_Pos))
+#define RCC_USART6_PERI_CLK_DIS()       (RCC->APB2ENR &= ~(1 << RCC_APB2ENR_USART6EN_Pos))
+
+#if defined(USE_RTE_PIN_MAPPING) && (USE_RTE_PIN_MAPPING == 1)
+st_usart_io_t usart1_io = {
+    .tx = {
+        .pin = RTE_USART1_TX_PIN,
+        .port = RTE_USART1_TX_PORT,
+        .alt_fn = RTE_USART1_TX_MUX
+    },
+    .rx = {
+        .pin = RTE_USART1_RX_PIN,
+        .port = RTE_USART1_RX_PORT,
+        .alt_fn = RTE_USART1_RX_MUX
+    },
+    .cts = {
+        .pin = RTE_USART1_CTS_PIN,
+        .port = RTE_USART1_CTS_PORT,
+        .alt_fn = RTE_USART1_CTS_MUX
+    },
+    .rts = {
+        .pin = RTE_USART1_RTS_PIN,
+        .port = RTE_USART1_RTS_PORT,
+        .alt_fn = RTE_USART1_RTS_MUX
+    },
+};
+
+st_usart_io_t usart2_io = {
+    .tx = {
+        .pin = RTE_USART2_TX_PIN,
+        .port = RTE_USART2_TX_PORT,
+        .alt_fn = RTE_USART2_TX_MUX
+    },
+    .rx = {
+        .pin = RTE_USART2_RX_PIN,
+        .port = RTE_USART2_RX_PORT,
+        .alt_fn = RTE_USART2_RX_MUX
+    },
+    .cts = {
+        .pin = RTE_USART2_CTS_PIN,
+        .port = RTE_USART2_CTS_PORT,
+        .alt_fn = RTE_USART2_CTS_MUX
+    },
+    .rts = {
+        .pin = RTE_USART2_RTS_PIN,
+        .port = RTE_USART2_RTS_PORT,
+        .alt_fn = RTE_USART2_RTS_MUX
+    },
+};
+
+st_usart_io_t usart6_io = {
+    .tx = {
+        .pin = RTE_USART6_TX_PIN,
+        .port = RTE_USART6_TX_PORT,
+        .alt_fn = RTE_USART6_TX_MUX
+    },
+    .rx = {
+        .pin = RTE_USART6_RX_PIN,
+        .port = RTE_USART6_RX_PORT,
+        .alt_fn = RTE_USART6_RX_MUX
+    },
+};
+#endif
