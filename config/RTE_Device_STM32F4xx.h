@@ -43,6 +43,14 @@
 #define RTE_USART1_RTS_MUX       GPIO_ALT_FN7
 #endif
 
+/* USART1 CLK pin used in synchronous mode */
+#define RTE_USART1_CLK_PORT_ID  0
+#if (RTE_USART1_CLK_PORT_ID == 0)
+#define RTE_USART1_CLK_PORT      GPIO_A
+#define RTE_USART1_CLK_PIN       GPIO8
+#define RTE_USART1_CLK_MUX       GPIO_ALT_FN7
+#endif
+
 /* USART2 TX pin */
 #define RTE_USART2_TX_PORT_ID   0
 #if (RTE_USART2_TX_PORT_ID == 0)
@@ -83,6 +91,14 @@
 #define RTE_USART2_RTS_MUX       GPIO_ALT_FN7
 #endif
 
+/* USART2 CLK pin used in synchronous mode */
+#define RTE_USART2_CLK_PORT_ID  0
+#if (RTE_USART2_CLK_PORT_ID == 0)
+#define RTE_USART2_CLK_PORT      GPIO_A
+#define RTE_USART2_CLK_PIN       GPIO4
+#define RTE_USART2_CLK_MUX       GPIO_ALT_FN7
+#endif
+
 // USART6 Configuration
 /* USART6 TX pin */
 #define RTE_USART6_TX_PORT_ID   0
@@ -107,4 +123,13 @@
 #define RTE_USART6_RX_PIN        GPIO12
 #define RTE_USART6_RX_MUX        GPIO_ALT_FN8
 #endif
+
+/* USART6 CLK pin used in synchronous mode */
+#define RTE_USART6_CLK_PORT_ID  0
+#if (RTE_USART6_CLK_PORT_ID == 0)
+#define RTE_USART6_CLK_PORT      GPIO_C
+#define RTE_USART6_CLK_PIN       GPIO8
+#define RTE_USART6_CLK_MUX       GPIO_ALT_FN8
+#endif
+
 #endif
