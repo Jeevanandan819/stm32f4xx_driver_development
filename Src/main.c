@@ -18,34 +18,32 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "stm32f4xx_gpio.h"
+#include <string.h>
+#include "stm32f4xx_usart.h"
 
-static volatile bool is_btn_triggered = false;
-static void btn_callback(uint8_t pin);
+
 
 int main(void)
 {
+    st_status_t status;
+    char *message = "Hello World";
+    st_usart_config_t config = {
+        .instance = USART_2,
+        .mode = USART_MODE_ASYNCHRONOUS,
+        .is_flow_control_enable = false,
+        .oversampling = USART_OVERSAMPLING_8,
+        .parity = USART_PARITY_NONE,
+        .baudrate = 115200,
+        .stop_bits = USART_STOP_BIT_1,
+        .clock_mode = USART_CPOL0_CPHA0,
+        .word_length = USART_WORD_LENGTH_8
+    };
+    st_usart_io_t usart_pin_config;
+
     GPIOA_PERI_CLK_EN();
-    GPIOC_PERI_CLK_EN();
-    SYSCFG_PERI_CLK_EN();
-
-    st_gpio_t btn = {GPIO_C, GPIO13};
-    st_gpio_config_mode(GPIOA, GPIO5, OUTPUT);
-    st_gpio_config_mode(GPIOC, btn.pin, INPUT);
-
-    st_gpio_config_interrupt(&btn, GPIO_INTR_RISE_EDGE, btn_callback);
-    NVIC_EnableIRQ(EXTI15_10_IRQn);
-    NVIC_SetPriority(EXTI15_10_IRQn, 1);
-
-    while (true) {
-        if (is_btn_triggered) {
-            st_gpio_toggle_pin(GPIOA, GPIO5);
-            is_btn_triggered = false;
-        }
-    }
-}
-
-static void btn_callback(uint8_t pin)
-{
-    is_btn_triggered = true;
+    st_usart_init(USART_2);
+    status = st_usart_set_configuration(&config, &usart_pin_config);
+    st_usart_send_data_blocking(USART_2, (uint8_t*)message, strlen(message));
+    while (1);
+    return 0;
 }
