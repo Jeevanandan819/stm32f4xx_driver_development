@@ -58,9 +58,9 @@ typedef enum
  */
 typedef enum
 {
-    USART_PARITY_NONE, /**< No parity bit */
     USART_PARITY_EVEN, /**< Even parity */
     USART_PARITY_ODD,  /**< Odd parity */
+    USART_PARITY_NONE, /**< No parity bit */
     USART_PARITY_LAST  /**< Marker for last parity option */
 } st_usart_parity_t;
 
@@ -92,6 +92,18 @@ typedef enum
     USART_CLOCK_MODE_LAST
 } st_usart_clock_mode_t;
 
+typedef enum {
+    USART_OVERSAMPLING_16,
+    USART_OVERSAMPLING_8,
+    USART_OVERSAMPLING_LAST
+} st_usart_oversampling_t;
+
+typedef enum {
+    USART_WORD_LENGTH_8,
+    USART_WORD_LENGTH_9,
+    USART_WORD_LENGTH_LAST
+} st_usart_word_length_t;
+
 /**
  * @brief USART configuration structure.
  *
@@ -100,13 +112,15 @@ typedef enum
  */
 typedef struct
 {
-    st_usart_instance_t instance;     /**< USART instance to use */
-    st_usart_mode_t mode;             /**< Operating mode */
-    st_usart_parity_t parity;         /**< Parity configuration */
-    st_usart_stop_bit_t stop_bits;    /**< Stop bits configuration */
-    st_usart_clock_mode_t clock_mode; /**< Clock mode for synchronous operation */
-    uint32_t baudrate;                /**< Baudrate for communication */
-    bool is_flow_control_enable; /**< Enable or disable hardware flow control */
+    st_usart_instance_t instance;           /**< USART instance to use */
+    st_usart_mode_t mode;                   /**< Operating mode */
+    st_usart_parity_t parity;               /**< Parity configuration */
+    st_usart_stop_bit_t stop_bits;          /**< Stop bits configuration */
+    st_usart_clock_mode_t clock_mode;       /**< Clock mode for synchronous operation */
+    uint32_t baudrate;                      /**< Baudrate for communication */
+    st_usart_oversampling_t oversampling;   /**< Oversampling for noise tolerance */
+    st_usart_word_length_t word_length;     /**< Word length for USART frame format */
+    bool is_flow_control_enable;            /**< Enable or disable hardware flow control */
 } st_usart_config_t;
 
 typedef struct {
@@ -114,6 +128,7 @@ typedef struct {
     st_peripheral_io_t rx;
     st_peripheral_io_t cts;
     st_peripheral_io_t rts;
+    st_peripheral_io_t clk;
 } st_usart_io_t;
 
 typedef enum {
@@ -148,7 +163,7 @@ st_status_t st_usart_init(st_usart_instance_t instance);
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_set_configuration(st_usart_config_t *config);
+st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_io_t *usart_pin_config);
 
 /**
  * @brief Register a callback function for USART events.
@@ -231,70 +246,11 @@ st_status_t st_usart_receive_data_non_blocking(st_usart_instance_t instance, uin
  */
 st_status_t st_usart_deinit(st_usart_instance_t instance);
 
+st_status_t st_usart_pin_init(st_usart_io_t *pin_configs, st_usart_config_t *usart_config);
+
 #define RCC_USART2_PERI_CLK_EN()        (RCC->APB1ENR |= 1 << RCC_APB1ENR_USART2EN_Pos)
 #define RCC_USART2_PERI_CLK_DIS()       (RCC->APB1ENR &= ~(1 << RCC_APB1ENR_USART2EN_Pos))
 #define RCC_USART1_PERI_CLK_EN()        (RCC->APB2ENR |= (1 << RCC_APB2ENR_USART1EN_Pos))
 #define RCC_USART1_PERI_CLK_DIS()       (RCC->APB2ENR &= ~(1 << RCC_APB2ENR_USART1EN_Pos))
 #define RCC_USART6_PERI_CLK_EN()        (RCC->APB2ENR |= (1 << RCC_APB2ENR_USART6EN_Pos))
 #define RCC_USART6_PERI_CLK_DIS()       (RCC->APB2ENR &= ~(1 << RCC_APB2ENR_USART6EN_Pos))
-
-#if defined(USE_RTE_PIN_MAPPING) && (USE_RTE_PIN_MAPPING == 1)
-st_usart_io_t usart1_io = {
-    .tx = {
-        .pin = RTE_USART1_TX_PIN,
-        .port = RTE_USART1_TX_PORT,
-        .alt_fn = RTE_USART1_TX_MUX
-    },
-    .rx = {
-        .pin = RTE_USART1_RX_PIN,
-        .port = RTE_USART1_RX_PORT,
-        .alt_fn = RTE_USART1_RX_MUX
-    },
-    .cts = {
-        .pin = RTE_USART1_CTS_PIN,
-        .port = RTE_USART1_CTS_PORT,
-        .alt_fn = RTE_USART1_CTS_MUX
-    },
-    .rts = {
-        .pin = RTE_USART1_RTS_PIN,
-        .port = RTE_USART1_RTS_PORT,
-        .alt_fn = RTE_USART1_RTS_MUX
-    },
-};
-
-st_usart_io_t usart2_io = {
-    .tx = {
-        .pin = RTE_USART2_TX_PIN,
-        .port = RTE_USART2_TX_PORT,
-        .alt_fn = RTE_USART2_TX_MUX
-    },
-    .rx = {
-        .pin = RTE_USART2_RX_PIN,
-        .port = RTE_USART2_RX_PORT,
-        .alt_fn = RTE_USART2_RX_MUX
-    },
-    .cts = {
-        .pin = RTE_USART2_CTS_PIN,
-        .port = RTE_USART2_CTS_PORT,
-        .alt_fn = RTE_USART2_CTS_MUX
-    },
-    .rts = {
-        .pin = RTE_USART2_RTS_PIN,
-        .port = RTE_USART2_RTS_PORT,
-        .alt_fn = RTE_USART2_RTS_MUX
-    },
-};
-
-st_usart_io_t usart6_io = {
-    .tx = {
-        .pin = RTE_USART6_TX_PIN,
-        .port = RTE_USART6_TX_PORT,
-        .alt_fn = RTE_USART6_TX_MUX
-    },
-    .rx = {
-        .pin = RTE_USART6_RX_PIN,
-        .port = RTE_USART6_RX_PORT,
-        .alt_fn = RTE_USART6_RX_MUX
-    },
-};
-#endif
