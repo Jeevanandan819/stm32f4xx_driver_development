@@ -23,75 +23,29 @@ static st_usart_io_t usart1_io = {
     .tx = {
         .pin = RTE_USART1_TX_PIN,
         .port = RTE_USART1_TX_PORT,
-        .alt_fn = RTE_USART1_TX_MUX
-    },
-    .rx = {
-        .pin = RTE_USART1_RX_PIN,
-        .port = RTE_USART1_RX_PORT,
-        .alt_fn = RTE_USART1_RX_MUX
-    },
-    .cts = {
-        .pin = RTE_USART1_CTS_PIN,
-        .port = RTE_USART1_CTS_PORT,
-        .alt_fn = RTE_USART1_CTS_MUX
-    },
-    .rts = {
-        .pin = RTE_USART1_RTS_PIN,
-        .port = RTE_USART1_RTS_PORT,
-        .alt_fn = RTE_USART1_RTS_MUX
-    },
-    .clk = {
-        .pin = RTE_USART1_CLK_PIN,
-        .port = RTE_USART1_CLK_PORT,
-        .alt_fn = RTE_USART1_CLK_MUX
-    }
-};
+        .alt_fn = RTE_USART1_TX_MUX},
+    .rx = {.pin = RTE_USART1_RX_PIN, .port = RTE_USART1_RX_PORT, .alt_fn = RTE_USART1_RX_MUX},
+    .cts = {.pin = RTE_USART1_CTS_PIN, .port = RTE_USART1_CTS_PORT, .alt_fn = RTE_USART1_CTS_MUX},
+    .rts = {.pin = RTE_USART1_RTS_PIN, .port = RTE_USART1_RTS_PORT, .alt_fn = RTE_USART1_RTS_MUX},
+    .clk = {.pin = RTE_USART1_CLK_PIN, .port = RTE_USART1_CLK_PORT, .alt_fn = RTE_USART1_CLK_MUX}};
 
 static st_usart_io_t usart2_io = {
     .tx = {
         .pin = RTE_USART2_TX_PIN,
         .port = RTE_USART2_TX_PORT,
-        .alt_fn = RTE_USART2_TX_MUX
-    },
-    .rx = {
-        .pin = RTE_USART2_RX_PIN,
-        .port = RTE_USART2_RX_PORT,
-        .alt_fn = RTE_USART2_RX_MUX
-    },
-    .cts = {
-        .pin = RTE_USART2_CTS_PIN,
-        .port = RTE_USART2_CTS_PORT,
-        .alt_fn = RTE_USART2_CTS_MUX
-    },
-    .rts = {
-        .pin = RTE_USART2_RTS_PIN,
-        .port = RTE_USART2_RTS_PORT,
-        .alt_fn = RTE_USART2_RTS_MUX
-    },
-    .clk = {
-        .pin = RTE_USART2_CLK_PIN,
-        .port = RTE_USART2_CLK_PORT,
-        .alt_fn = RTE_USART2_CLK_MUX
-    }
-};
+        .alt_fn = RTE_USART2_TX_MUX},
+    .rx = {.pin = RTE_USART2_RX_PIN, .port = RTE_USART2_RX_PORT, .alt_fn = RTE_USART2_RX_MUX},
+    .cts = {.pin = RTE_USART2_CTS_PIN, .port = RTE_USART2_CTS_PORT, .alt_fn = RTE_USART2_CTS_MUX},
+    .rts = {.pin = RTE_USART2_RTS_PIN, .port = RTE_USART2_RTS_PORT, .alt_fn = RTE_USART2_RTS_MUX},
+    .clk = {.pin = RTE_USART2_CLK_PIN, .port = RTE_USART2_CLK_PORT, .alt_fn = RTE_USART2_CLK_MUX}};
 
 static st_usart_io_t usart6_io = {
     .tx = {
         .pin = RTE_USART6_TX_PIN,
         .port = RTE_USART6_TX_PORT,
-        .alt_fn = RTE_USART6_TX_MUX
-    },
-    .rx = {
-        .pin = RTE_USART6_RX_PIN,
-        .port = RTE_USART6_RX_PORT,
-        .alt_fn = RTE_USART6_RX_MUX
-    },
-    .clk = {
-        .pin = RTE_USART6_CLK_PIN,
-        .port = RTE_USART6_CLK_PORT,
-        .alt_fn = RTE_USART6_CLK_MUX
-    }
-};
+        .alt_fn = RTE_USART6_TX_MUX},
+    .rx = {.pin = RTE_USART6_RX_PIN, .port = RTE_USART6_RX_PORT, .alt_fn = RTE_USART6_RX_MUX},
+    .clk = {.pin = RTE_USART6_CLK_PIN, .port = RTE_USART6_CLK_PORT, .alt_fn = RTE_USART6_CLK_MUX}};
 #endif
 
 /**
@@ -132,21 +86,28 @@ st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_io_t 
         return ST_STATUS_INVALID_PARAMETER;
     }
 
-    #if defined(USE_RTE_PIN_MAPPING) && (USE_RTE_PIN_MAPPING == 1)
-        if (config->instance == USART_1) {
-            usart_pin_config = &usart1_io;
-        } else if (config->instance == USART_2) {
-            usart_pin_config = &usart2_io;
-        } else if (config->instance == USART_6) {
-            usart_pin_config = &usart6_io;
-        }
-    #elif !defined(USE_RTE_PIN_MAPPING) || (USE_RTE_PIN_MAPPING == 0)
-    if (usart_pin_config == NULL) {
+#if defined(USE_RTE_PIN_MAPPING) && (USE_RTE_PIN_MAPPING == 1)
+    if (config->instance == USART_1)
+    {
+        usart_pin_config = &usart1_io;
+    }
+    else if (config->instance == USART_2)
+    {
+        usart_pin_config = &usart2_io;
+    }
+    else if (config->instance == USART_6)
+    {
+        usart_pin_config = &usart6_io;
+    }
+#elif !defined(USE_RTE_PIN_MAPPING) || (USE_RTE_PIN_MAPPING == 0)
+    if (usart_pin_config == NULL)
+    {
         return ST_STATUS_INVALID_PARAMETER;
     }
-    #endif
+#endif
     st_status_t status = st_usart_pin_init(usart_pin_config, config);
-    if (status != ST_STATUS_OK) {
+    if (status != ST_STATUS_OK)
+    {
         return status;
     }
 
@@ -213,8 +174,10 @@ st_status_t st_usart_send_data_blocking(st_usart_instance_t instance, uint8_t *t
 {
     USART_TypeDef *pUSART = sti_get_usart_base_address(instance);
     pUSART->CR1_b.TE = ENABLE;
-    while (tx_len > 0) {
-        if (pUSART->SR_b.TXE == 1) {
+    while (tx_len > 0)
+    {
+        if (pUSART->SR_b.TXE == 1)
+        {
             pUSART->DR_b.DR = *(tx_buf++);
             tx_len--;
         }
@@ -296,17 +259,20 @@ st_status_t st_usart_pin_init(st_usart_io_t *pin_configs, st_usart_config_t *usa
         .ospeed = GPIO_SPEED_HIGH,
         .otype = GPIO_PUSH_PULL,
     };
-    if (pin_configs == NULL || usart_config == NULL) {
+    if (pin_configs == NULL || usart_config == NULL)
+    {
         return ST_STATUS_INVALID_PARAMETER;
     }
-    do {
+    do
+    {
         // Configure USART TX pin
         usart_pin_config.port = pin_configs->tx.port;
         usart_pin_config.pin = pin_configs->tx.pin;
         usart_pin_config.alt_fn = pin_configs->tx.alt_fn;
         usart_pin_config.pupd_config = GPIO_NOPUPD;
         status = st_gpio_set_configuration(&usart_pin_config);
-        if (status != ST_STATUS_OK) {
+        if (status != ST_STATUS_OK)
+        {
             break;
         }
         // Configure USART RX pin
@@ -315,27 +281,34 @@ st_status_t st_usart_pin_init(st_usart_io_t *pin_configs, st_usart_config_t *usa
         usart_pin_config.alt_fn = pin_configs->rx.alt_fn;
         usart_pin_config.pupd_config = GPIO_PU;
         status = st_gpio_set_configuration(&usart_pin_config);
-        if (status != ST_STATUS_OK) {
+        if (status != ST_STATUS_OK)
+        {
             break;
         }
 
-        if (usart_config->mode == USART_MODE_SYNCHRONOUS_MASTER || USART_MODE_SYNCHRONOUS_SLAVE) {
+        if (usart_config->mode == USART_MODE_SYNCHRONOUS_MASTER || USART_MODE_SYNCHRONOUS_SLAVE)
+        {
             usart_pin_config.port = pin_configs->clk.port;
             usart_pin_config.pin = pin_configs->clk.pin;
             usart_pin_config.alt_fn = pin_configs->clk.alt_fn;
             usart_pin_config.pupd_config = GPIO_NOPUPD;
             status = st_gpio_set_configuration(&usart_pin_config);
-            if (status != ST_STATUS_OK) {
+            if (status != ST_STATUS_OK)
+            {
                 break;
             }
-        } else {
-            if (usart_config->is_flow_control_enable) {
+        }
+        else
+        {
+            if (usart_config->is_flow_control_enable)
+            {
                 usart_pin_config.port = pin_configs->cts.port;
                 usart_pin_config.pin = pin_configs->cts.pin;
                 usart_pin_config.alt_fn = pin_configs->cts.alt_fn;
                 usart_pin_config.pupd_config = GPIO_PU;
                 status = st_gpio_set_configuration(&usart_pin_config);
-                if (status != ST_STATUS_OK) {
+                if (status != ST_STATUS_OK)
+                {
                     break;
                 }
 
@@ -344,7 +317,8 @@ st_status_t st_usart_pin_init(st_usart_io_t *pin_configs, st_usart_config_t *usa
                 usart_pin_config.alt_fn = pin_configs->rts.alt_fn;
                 usart_pin_config.pupd_config = GPIO_NOPUPD;
                 status = st_gpio_set_configuration(&usart_pin_config);
-                if (status != ST_STATUS_OK) {
+                if (status != ST_STATUS_OK)
+                {
                     break;
                 }
             }

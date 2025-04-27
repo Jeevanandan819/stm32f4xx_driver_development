@@ -31,7 +31,7 @@ typedef enum
 {
     USART_1, /**< USART instance 1 */
     USART_2, /**< USART instance 2 */
-    USART_6 /**< USART instance 6 */
+    USART_6  /**< USART instance 6 */
 } st_usart_instance_t;
 
 /**
@@ -74,7 +74,7 @@ typedef enum
     USART_STOP_BIT_1,   /**< 1 stop bit */
     USART_STOP_BIT_0_5, /**< 0.5 stop bit */
     USART_STOP_BIT_2,   /**< 2 stop bits */
-    USART_STOP_BIT_1_5,  /**< 1.5 stop bits */
+    USART_STOP_BIT_1_5, /**< 1.5 stop bits */
     USART_STOP_BIT_LAST
 } st_usart_stop_bit_t;
 
@@ -88,17 +88,19 @@ typedef enum
     USART_CPOL0_CPHA0, /**< Clock polarity 0 and clock phase 0 */
     USART_CPOL0_CPHA1, /**< Clock polarity 0 and clock phase 1 */
     USART_CPOL1_CPHA0, /**< Clock polarity 1 and clock phase 0 */
-    USART_CPOL1_CPHA1,  /**< Clock polarity 1 and clock phase 1 */
+    USART_CPOL1_CPHA1, /**< Clock polarity 1 and clock phase 1 */
     USART_CLOCK_MODE_LAST
 } st_usart_clock_mode_t;
 
-typedef enum {
+typedef enum
+{
     USART_OVERSAMPLING_16,
     USART_OVERSAMPLING_8,
     USART_OVERSAMPLING_LAST
 } st_usart_oversampling_t;
 
-typedef enum {
+typedef enum
+{
     USART_WORD_LENGTH_8,
     USART_WORD_LENGTH_9,
     USART_WORD_LENGTH_LAST
@@ -112,18 +114,19 @@ typedef enum {
  */
 typedef struct
 {
-    st_usart_instance_t instance;           /**< USART instance to use */
-    st_usart_mode_t mode;                   /**< Operating mode */
-    st_usart_parity_t parity;               /**< Parity configuration */
-    st_usart_stop_bit_t stop_bits;          /**< Stop bits configuration */
-    st_usart_clock_mode_t clock_mode;       /**< Clock mode for synchronous operation */
-    uint32_t baudrate;                      /**< Baudrate for communication */
-    st_usart_oversampling_t oversampling;   /**< Oversampling for noise tolerance */
-    st_usart_word_length_t word_length;     /**< Word length for USART frame format */
-    bool is_flow_control_enable;            /**< Enable or disable hardware flow control */
+    st_usart_instance_t instance;         /**< USART instance to use */
+    st_usart_mode_t mode;                 /**< Operating mode */
+    st_usart_parity_t parity;             /**< Parity configuration */
+    st_usart_stop_bit_t stop_bits;        /**< Stop bits configuration */
+    st_usart_clock_mode_t clock_mode;     /**< Clock mode for synchronous operation */
+    uint32_t baudrate;                    /**< Baudrate for communication */
+    st_usart_oversampling_t oversampling; /**< Oversampling for noise tolerance */
+    st_usart_word_length_t word_length;   /**< Word length for USART frame format */
+    bool is_flow_control_enable;          /**< Enable or disable hardware flow control */
 } st_usart_config_t;
 
-typedef struct {
+typedef struct
+{
     st_peripheral_io_t tx;
     st_peripheral_io_t rx;
     st_peripheral_io_t cts;
@@ -131,15 +134,16 @@ typedef struct {
     st_peripheral_io_t clk;
 } st_usart_io_t;
 
-typedef enum {
-    USART_STATE_RESET             = 0x00U,    // Peripheral not initialized
-    USART_STATE_READY             = 0x01U,    // Peripheral initialized and ready for use
-    USART_STATE_BUSY              = 0x02U,    // Process ongoing
-    USART_STATE_BUSY_TX           = 0x12U,    // Data Transmission ongoing
-    USART_STATE_BUSY_RX           = 0x22U,    // Data Reception ongoing
-    USART_STATE_BUSY_TX_RX        = 0x32U,    // Data Transmission and Reception ongoing
-    USART_STATE_TIMEOUT           = 0x03U,    // Timeout state
-    USART_STATE_ERROR             = 0x04U     // Error occurred
+typedef enum
+{
+    USART_STATE_RESET = 0x00U,      // Peripheral not initialized
+    USART_STATE_READY = 0x01U,      // Peripheral initialized and ready for use
+    USART_STATE_BUSY = 0x02U,       // Process ongoing
+    USART_STATE_BUSY_TX = 0x12U,    // Data Transmission ongoing
+    USART_STATE_BUSY_RX = 0x22U,    // Data Reception ongoing
+    USART_STATE_BUSY_TX_RX = 0x32U, // Data Transmission and Reception ongoing
+    USART_STATE_TIMEOUT = 0x03U,    // Timeout state
+    USART_STATE_ERROR = 0x04U       // Error occurred
 } st_usart_state_t;
 
 /**
@@ -248,9 +252,9 @@ st_status_t st_usart_deinit(st_usart_instance_t instance);
 
 st_status_t st_usart_pin_init(st_usart_io_t *pin_configs, st_usart_config_t *usart_config);
 
-#define RCC_USART2_PERI_CLK_EN()        (RCC->APB1ENR |= 1 << RCC_APB1ENR_USART2EN_Pos)
-#define RCC_USART2_PERI_CLK_DIS()       (RCC->APB1ENR &= ~(1 << RCC_APB1ENR_USART2EN_Pos))
-#define RCC_USART1_PERI_CLK_EN()        (RCC->APB2ENR |= (1 << RCC_APB2ENR_USART1EN_Pos))
-#define RCC_USART1_PERI_CLK_DIS()       (RCC->APB2ENR &= ~(1 << RCC_APB2ENR_USART1EN_Pos))
-#define RCC_USART6_PERI_CLK_EN()        (RCC->APB2ENR |= (1 << RCC_APB2ENR_USART6EN_Pos))
-#define RCC_USART6_PERI_CLK_DIS()       (RCC->APB2ENR &= ~(1 << RCC_APB2ENR_USART6EN_Pos))
+#define RCC_USART2_PERI_CLK_EN() (RCC->APB1ENR |= 1 << RCC_APB1ENR_USART2EN_Pos)
+#define RCC_USART2_PERI_CLK_DIS() (RCC->APB1ENR &= ~(1 << RCC_APB1ENR_USART2EN_Pos))
+#define RCC_USART1_PERI_CLK_EN() (RCC->APB2ENR |= (1 << RCC_APB2ENR_USART1EN_Pos))
+#define RCC_USART1_PERI_CLK_DIS() (RCC->APB2ENR &= ~(1 << RCC_APB2ENR_USART1EN_Pos))
+#define RCC_USART6_PERI_CLK_EN() (RCC->APB2ENR |= (1 << RCC_APB2ENR_USART6EN_Pos))
+#define RCC_USART6_PERI_CLK_DIS() (RCC->APB2ENR &= ~(1 << RCC_APB2ENR_USART6EN_Pos))
