@@ -182,6 +182,7 @@ st_status_t st_usart_send_data_blocking(st_usart_instance_t instance, uint8_t *t
             tx_len--;
         }
     }
+    pUSART->CR1_b.TE = DISABLE;
     return ST_STATUS_OK;
 }
 
@@ -199,6 +200,19 @@ st_status_t st_usart_send_data_blocking(st_usart_instance_t instance, uint8_t *t
  */
 st_status_t st_usart_receive_data_blocking(st_usart_instance_t instance, uint8_t *rx_buf, uint16_t rx_len)
 {
+    USART_TypeDef *pUSART = sti_get_usart_base_address(instance);
+    if (pUSART == NULL) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    pUSART->CR1_b.RE = ENABLE;
+    while (rx_len > 0) {
+        if (pUSART->SR_b.RXNE) {
+            *(rx_buf) = (uint8_t)pUSART->DR_b.DR;
+            rx_buf++;
+            rx_len--;
+        }
+    }
+    pUSART->CR1_b.RE = DISABLE;
     return ST_STATUS_OK;
 }
 
