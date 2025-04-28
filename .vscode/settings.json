@@ -8,6 +8,7 @@
         "cstdlib": "c",
         "rte_device_stm32f4xx.h": "c",
         "stm32f4xx.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "stm32f4xx_debug.h": "c"
     },
 }
