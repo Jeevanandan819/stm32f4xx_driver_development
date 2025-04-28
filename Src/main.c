@@ -22,12 +22,15 @@
 
 int main(void)
 {
+    int a = 10;
     st_debug_init();
-    char message[5];
-    // uint8_t a = 10;
-    st_usart_receive_data_blocking(USART_2, (uint8_t*)message, 5);
     while (1) {
-        LOG_INFO("message:%s", message);
+        LOG_INFO("Value of a = %d\n", a);
+        LOG_WARNING("Value of a = %d\n", a);
+        LOG_ERROR("Value of a = %d\n", a);
+        LOG_DEBUG("Value of a = %d\n", a);
+        // DEBUG_LOG_RAW("Value of a = 10\n");
+        for (uint32_t i=0; i<0xFFFFFF; i++);
     }
     return 0;
 }
