@@ -128,7 +128,7 @@ target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
     ${linker_OPTS}
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     -u _printf_float # STDIO float formatting support (remove if not used)
-    --specs=nosys.specs
+    --specs=nano.specs
     -Wl,--start-group
     -lc
     -lm
