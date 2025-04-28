@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include "stm32f4xx_debug.h"
 
-#define LOGGING_OVER_UART       1
-#define LOGGING_OVER_SWO        0
+#define LOGGING_OVER_UART       0
+#define LOGGING_OVER_SWO        1
+
+#define DEBUG_LOG_MODULE        LOGGING_OVER_SWO
 #define UART_DEBUG_INSTANCE     USART_2
 
 /**
@@ -14,7 +16,7 @@
 st_status_t st_debug_init(void)
 {
     st_status_t status = ST_STATUS_OK;
-    #if defined(LOGGING_OVER_UART) && (LOGGING_OVER_UART == 1)
+    #if defined(DEBUG_LOG_MODULE) && (DEBUG_LOG_MODULE == LOGGING_OVER_UART)
     st_usart_config_t debug_uart_config = {
         .instance = UART_DEBUG_INSTANCE,
         .baudrate = 115200,
@@ -37,7 +39,7 @@ st_status_t st_debug_init(void)
             break;
         }
     } while (false);
-    #elif defined(LOGGING_OVER_SWO) && (LOGGING_OVER_SWO == 1)
+    #elif defined(DEBUG_LOG_MODULE) && (DEBUG_LOG_MODULE == LOGGING_OVER_SWO)
     // Enable DWT and ITM units
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     ITM->LAR = 0xC5ACCE55;
@@ -49,11 +51,11 @@ st_status_t st_debug_init(void)
 
 void st_debug_log_send_str(const char *str)
 {
-    #if defined(LOGGING_OVER_UART) && (LOGGING_OVER_UART == 1)
+    #if defined(DEBUG_LOG_MODULE) && (DEBUG_LOG_MODULE == LOGGING_OVER_UART)
     if (str != NULL) {
         st_usart_send_data_blocking(UART_DEBUG_INSTANCE, (uint8_t*)str, strlen(str));
     }
-    #elif defined(LOGGING_OVER_SWO) && (LOGGING_OVER_SWO == 1)
+    #elif defined(DEBUG_LOG_MODULE) && (DEBUG_LOG_MODULE == LOGGING_OVER_SWO)
     for (uint32_t idx=0; idx<strlen(str); idx++) {
         ITM_SendChar(str[idx]);
     }
