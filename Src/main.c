@@ -17,14 +17,17 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "stm32f4xx_debug.h"
 
 int main(void)
 {
     st_debug_init();
-    uint8_t a = 10;
+    char message[5];
+    // uint8_t a = 10;
+    st_usart_receive_data_blocking(USART_2, (uint8_t*)message, 5);
     while (1) {
-        LOG_INFO("Just for information, value:%d", 10);
+        LOG_INFO("message:%s", message);
     }
     return 0;
 }
