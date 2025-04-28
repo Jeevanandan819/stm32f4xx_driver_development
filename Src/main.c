@@ -16,34 +16,15 @@
  ******************************************************************************
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include "stm32f4xx_usart.h"
-
-
+#include <stdio.h>
+#include "stm32f4xx_debug.h"
 
 int main(void)
 {
-    st_status_t status;
-    char *message = "Hello World";
-    st_usart_config_t config = {
-        .instance = USART_2,
-        .mode = USART_MODE_ASYNCHRONOUS,
-        .is_flow_control_enable = false,
-        .oversampling = USART_OVERSAMPLING_8,
-        .parity = USART_PARITY_NONE,
-        .baudrate = 115200,
-        .stop_bits = USART_STOP_BIT_1,
-        .clock_mode = USART_CPOL0_CPHA0,
-        .word_length = USART_WORD_LENGTH_8
-    };
-    st_usart_io_t usart_pin_config;
-
-    GPIOA_PERI_CLK_EN();
-    st_usart_init(USART_2);
-    status = st_usart_set_configuration(&config, &usart_pin_config);
-    st_usart_send_data_blocking(USART_2, (uint8_t*)message, strlen(message));
-    while (1);
+    st_debug_init();
+    uint8_t a = 10;
+    while (1) {
+        LOG_INFO("Just for information, value:%d", 10);
+    }
     return 0;
 }
