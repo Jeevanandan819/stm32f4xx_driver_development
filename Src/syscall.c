@@ -39,6 +39,9 @@ extern int __io_getchar(void) __attribute__((weak));
 char *__env[1] = { 0 };
 char **environ = __env;
 
+void _init(void) {}
+void _fini(void) {}
+
 
 /* Functions */
 void initialise_monitor_handles()
