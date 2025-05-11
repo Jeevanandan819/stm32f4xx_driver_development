@@ -57,9 +57,17 @@ static st_usart_io_t usart6_io = {
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_init(st_usart_instance_t instance)
+st_status_t st_usart_init(st_usart_instance_t instance, st_usart_handle_t *handle)
 {
+    if (handle != NULL) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
     sti_usart_clock_control(instance, ENABLE);
+    handle->pUSART = sti_get_usart_base_address(instance);
+    if (handle->pUSART == NULL) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    handle->config.instance = instance;
     return ST_STATUS_OK;
 }
 
@@ -73,13 +81,13 @@ st_status_t st_usart_init(st_usart_instance_t instance)
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_io_t *usart_pin_config)
+st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handle_t *handle, st_usart_io_t *usart_pin_config)
 {
-    if (config == NULL)
+    if (config == NULL || handle == NULL || handle->pUSART == NULL)
     {
         return ST_STATUS_INVALID_PARAMETER;
     }
-    USART_TypeDef *pUSART = sti_get_usart_base_address(config->instance);
+    USART_TypeDef *pUSART = handle->pUSART;
     if (pUSART == NULL || config->clock_mode >= USART_CLOCK_MODE_LAST || config->mode >= USART_MODE_LAST || config->parity >= USART_PARITY_LAST || config->oversampling >= USART_OVERSAMPLING_LAST ||
         config->word_length >= USART_WORD_LENGTH_LAST)
     {
@@ -153,8 +161,12 @@ st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_io_t 
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_register_callback(st_usart_instance_t instance, st_usart_callback_t callback)
+st_status_t st_usart_register_callback(st_usart_handle_t *handle, st_usart_callback_t callback)
 {
+    if (handle == NULL) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    handle->user_callback = callback;
     return ST_STATUS_OK;
 }
 

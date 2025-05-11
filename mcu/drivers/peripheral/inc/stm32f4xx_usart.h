@@ -146,6 +146,19 @@ typedef enum
     USART_STATE_ERROR = 0x04U       // Error occurred
 } st_usart_state_t;
 
+typedef struct {
+    USART_TypeDef *pUSART;
+    st_usart_config_t config;
+    uint8_t *pTxBuffer;
+    uint16_t tx_size;
+    uint16_t tx_count;
+    uint8_t *pRxBuufer;
+    uint16_t rx_size;
+    uint16_t rx_count;
+    __IO st_usart_state_t state;
+    st_usart_callback_t user_callback;
+} st_usart_handle_t;
+
 /**
  * @brief Initialize the specified USART instance.
  *
@@ -155,7 +168,7 @@ typedef enum
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_init(st_usart_instance_t instance);
+st_status_t st_usart_init(st_usart_instance_t instance, st_usart_handle_t *handle);
 
 /**
  * @brief Set the configuration for the USART.
@@ -167,7 +180,7 @@ st_status_t st_usart_init(st_usart_instance_t instance);
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_io_t *usart_pin_config);
+st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handle_t *handle, st_usart_io_t *usart_pin_config);
 
 /**
  * @brief Register a callback function for USART events.
@@ -180,7 +193,7 @@ st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_io_t 
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_register_callback(st_usart_instance_t instance, st_usart_callback_t callback);
+st_status_t st_usart_register_callback(st_usart_handle_t *handle, st_usart_callback_t callback);
 
 /**
  * @brief Send data in blocking mode.
