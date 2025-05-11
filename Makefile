@@ -1,4 +1,4 @@
-PROJECT_NAME = stm32f411xx_driver_development
+PROJECT_NAME = stm32f4xx_driver_development
 CC = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 OBJSIZE = arm-none-eabi-size
@@ -17,11 +17,10 @@ CFLAGS = $(FLAGS) -Wall -Wextra -Wno-unused-parameter -Og -g3 -ggdb -MD -std=gnu
 STARTUP_FILE_PATH = Startup/startup_stm32f411retx.s
 LINKER_SCRIPT_SRC = stm32f411retx_FLASH.ld
 
-LDFLAGS = -T$(LINKER_SCRIPT_SRC) $(CPU_PARAMS) -Wl,-Map=$(OUTPUT_DIR)/$(PROJECT_NAME).map -u _printf_float \
-  -Wl,-Map=$(OUTPUT_DIR)/$(PROJECT_NAME).map \
+LDFLAGS = -T$(LINKER_SCRIPT_SRC) $(CPU_PARAMS) -Wl,-Map=$(OUTPUT_DIR)/$(PROJECT_NAME).map \
   -Wl,--gc-sections \
   -u _printf_float \
-  --specs=nano.specs --specs=nosys.specs \
+  --specs=nano.specs \
   -Wl,--start-group \
   -lc \
   -lm \
