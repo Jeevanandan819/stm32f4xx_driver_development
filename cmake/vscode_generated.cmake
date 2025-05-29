@@ -17,7 +17,7 @@ set(cpu_PARAMS ${cpu_PARAMS}
 
 # Linker script
 set(linker_script_SRC ${linker_script_SRC}
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32f411retx_FLASH.ld
+    ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx_linker.ld
 )
 
 # Sources
@@ -27,7 +27,7 @@ set(sources_SRCS ${sources_SRCS}
 	${CMAKE_CURRENT_SOURCE_DIR}/Src/syscall.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Src/sysmem.c
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/core/chip/src/system_stm32f4xx.c
-	${CMAKE_CURRENT_SOURCE_DIR}/Startup/startup_stm32f411retx.s
+	${CMAKE_CURRENT_SOURCE_DIR}/Startup/startup_stm32f4xx.c
 )
 
 # Include directories
