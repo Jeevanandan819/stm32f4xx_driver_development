@@ -1,8 +1,8 @@
 /*=============================================================================
  * File: stm32f4xx_linker.ld
  * Description: Linker script for STM32 MCU, defining memory sections and layout.
- * Author: [Jeevanandan Sandan]
- * Date: [29-05-2025]
+ * Author: Jeevanandan Sandan
+ * Date: 29-05-2025
  *
  * Notes:
  * - Defines Flash and RAM memory regions.
