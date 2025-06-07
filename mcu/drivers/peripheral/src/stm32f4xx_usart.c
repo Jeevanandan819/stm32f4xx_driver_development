@@ -1,6 +1,6 @@
 /**
  * @file stm32f4xx_usart.c
- * @brief Example source file contains the definitions of USART peripheral API prototyping.
+ * @brief The source file contains the definitions of USART peripheral API implementation.
  *
  * @author Jeevanandan Sandan
  * @date April 25, 2025
@@ -10,13 +10,15 @@
  */
 
 #include "stm32f4xx_usart.h"
+#include <string.h>
 
 #define USART_PERI_CLK 16000000UL
 
-// static st_usart_callback_t usart_callbacks[] = {NULL, NULL, NULL};
 static void sti_usart_clock_control(st_usart_instance_t instance, uint8_t enable);
 static USART_TypeDef *sti_get_usart_base_address(st_usart_instance_t instance);
 static void sti_usart_set_baudrate(USART_TypeDef *pUSART, uint32_t baudrate, st_usart_oversampling_t oversampling);
+static bool validate_usart_handle(const st_usart_handle_t *handle);
+static void sti_usart_nvic_intr_enable(st_usart_instance_t instance, uint8_t enable);
 
 #if defined(USE_RTE_PIN_MAPPING) && (USE_RTE_PIN_MAPPING == 1)
 static st_usart_io_t usart1_io = {
@@ -59,7 +61,7 @@ static st_usart_io_t usart6_io = {
  */
 st_status_t st_usart_init(st_usart_instance_t instance, st_usart_handle_t *handle)
 {
-    if (handle != NULL) {
+    if (handle == NULL) {
         return ST_STATUS_INVALID_PARAMETER;
     }
     sti_usart_clock_control(instance, ENABLE);
@@ -68,6 +70,7 @@ st_status_t st_usart_init(st_usart_instance_t instance, st_usart_handle_t *handl
         return ST_STATUS_INVALID_PARAMETER;
     }
     handle->config.instance = instance;
+    handle->state = USART_STATE_RESET;
     return ST_STATUS_OK;
 }
 
@@ -83,12 +86,12 @@ st_status_t st_usart_init(st_usart_instance_t instance, st_usart_handle_t *handl
  */
 st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handle_t *handle, st_usart_io_t *usart_pin_config)
 {
-    if (config == NULL || handle == NULL || handle->pUSART == NULL)
+    if (config == NULL || handle == NULL)
     {
-        return ST_STATUS_INVALID_PARAMETER;
+        return ST_STATUS_NULL_PARAMETER;
     }
-    USART_TypeDef *pUSART = handle->pUSART;
-    if (pUSART == NULL || config->clock_mode >= USART_CLOCK_MODE_LAST || config->mode >= USART_MODE_LAST || config->parity >= USART_PARITY_LAST || config->oversampling >= USART_OVERSAMPLING_LAST ||
+    
+    if (!validate_usart_handle(handle) || config->clock_mode >= USART_CLOCK_MODE_LAST || config->mode >= USART_MODE_LAST || config->parity >= USART_PARITY_LAST || config->oversampling >= USART_OVERSAMPLING_LAST ||
         config->word_length >= USART_WORD_LENGTH_LAST)
     {
         return ST_STATUS_INVALID_PARAMETER;
@@ -110,7 +113,7 @@ st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handl
 #elif !defined(USE_RTE_PIN_MAPPING) || (USE_RTE_PIN_MAPPING == 0)
     if (usart_pin_config == NULL)
     {
-        return ST_STATUS_INVALID_PARAMETER;
+        return ST_STATUS_NULL_PARAMETER;
     }
 #endif
     st_status_t status = st_usart_pin_init(usart_pin_config, config);
@@ -125,28 +128,44 @@ st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handl
         {
             return ST_STATUS_INVALID_PARAMETER;
         }
-        pUSART->CR2_b.CLKEN = ENABLE;
-        pUSART->CR2_b.CPOL = (config->clock_mode >> 1) & 0x01;
-        pUSART->CR2_b.CPHA = config->clock_mode & 0x01;
+        handle->pUSART->CR2_b.CLKEN = ENABLE;
+        handle->pUSART->CR2_b.CPOL = (config->clock_mode >> 1) & 0x01;
+        handle->pUSART->CR2_b.CPHA = config->clock_mode & 0x01;
     }
 
     if (config->parity != USART_PARITY_NONE)
     {
-        pUSART->CR1_b.PCE = ENABLE;
-        pUSART->CR1_b.PS = config->parity;
+        handle->pUSART->CR1_b.PCE = ENABLE;
+        handle->pUSART->CR1_b.PS = config->parity;
     }
 
     if (config->is_flow_control_enable)
     {
-        pUSART->CR3_b.RTSE = ENABLE;
-        pUSART->CR3_b.CTSE = ENABLE;
+        handle->pUSART->CR3_b.RTSE = ENABLE;
+        handle->pUSART->CR3_b.CTSE = ENABLE;
     }
 
-    pUSART->CR1_b.M = config->word_length;
-    pUSART->CR1_b.OVER8 = config->oversampling;
-    pUSART->CR2_b.STOP = config->stop_bits;
-    pUSART->CR1_b.UE = ENABLE;
-    sti_usart_set_baudrate(pUSART, config->baudrate, config->oversampling);
+    handle->pUSART->CR1_b.M = config->word_length;
+    handle->pUSART->CR1_b.OVER8 = config->oversampling;
+    handle->pUSART->CR2_b.STOP = config->stop_bits;
+    handle->pUSART->CR1_b.UE = ENABLE;
+    
+    // Enable the USART Interrupts in non_blocking mode
+    sti_usart_nvic_intr_enable(config->instance, ENABLE);
+
+    // set the USART baudrate
+    sti_usart_set_baudrate(handle->pUSART, config->baudrate, config->oversampling);
+
+    // Updating the handle structure
+    handle->state = USART_STATE_READY;
+    handle->config.baudrate = config->baudrate;
+    handle->config.clock_mode = config->clock_mode;
+    handle->config.is_flow_control_enable = config->is_flow_control_enable;
+    handle->config.mode = config->mode;
+    handle->config.oversampling = config->oversampling;
+    handle->config.parity = config->parity;
+    handle->config.stop_bits = config->stop_bits;
+    handle->config.word_length = config->word_length;
     return ST_STATUS_OK;
 }
 
@@ -163,10 +182,29 @@ st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handl
  */
 st_status_t st_usart_register_callback(st_usart_handle_t *handle, st_usart_callback_t callback)
 {
-    if (handle == NULL) {
+    if (!validate_usart_handle(handle)) {
         return ST_STATUS_INVALID_PARAMETER;
     }
     handle->user_callback = callback;
+    return ST_STATUS_OK;
+}
+
+
+/**
+ * @brief Un-Register a callback function for USART events.
+ *
+ * Dissassociate a user-defined callback function with a USART instance.
+ *
+ * @param instance The USART instance for which to un-register the callback.
+ *
+ * @return st_status_t status code indicating success or error.
+ */
+st_status_t st_usart_unregister_callback(st_usart_handle_t *handle)
+{
+    if (!validate_usart_handle(handle)) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    handle->user_callback = NULL;
     return ST_STATUS_OK;
 }
 
@@ -182,19 +220,29 @@ st_status_t st_usart_register_callback(st_usart_handle_t *handle, st_usart_callb
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_send_data_blocking(st_usart_instance_t instance, uint8_t *tx_buf, uint16_t tx_len)
+st_status_t st_usart_send_data_blocking(st_usart_handle_t *handle, const uint8_t *tx_buf, uint16_t tx_len)
 {
-    USART_TypeDef *pUSART = sti_get_usart_base_address(instance);
-    pUSART->CR1_b.TE = ENABLE;
-    while (tx_len > 0)
+    if (!validate_usart_handle(handle)) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+
+    if (handle->state != USART_STATE_READY) {
+        return ST_STATUS_BUSY;
+    }
+    handle->state = USART_STATE_BUSY_TX;
+    handle->pUSART->CR1_b.TE = ENABLE;
+    handle->pTxBuffer = tx_buf;
+    handle->tx_size = tx_len;
+    handle->tx_count = 0;
+    while (handle->tx_count < handle->tx_size)
     {
-        if (pUSART->SR_b.TXE == 1)
+        if (handle->pUSART->SR_b.TXE == 1)
         {
-            pUSART->DR_b.DR = *(tx_buf++);
-            tx_len--;
+            handle->pUSART->DR_b.DR = tx_buf[handle->tx_count++];
         }
     }
-    pUSART->CR1_b.TE = DISABLE;
+    handle->pUSART->CR1_b.TE = DISABLE;
+    handle->state = USART_STATE_READY;
     return ST_STATUS_OK;
 }
 
@@ -210,21 +258,26 @@ st_status_t st_usart_send_data_blocking(st_usart_instance_t instance, uint8_t *t
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_receive_data_blocking(st_usart_instance_t instance, uint8_t *rx_buf, uint16_t rx_len)
+st_status_t st_usart_receive_data_blocking(st_usart_handle_t *handle, uint8_t *rx_buf, uint16_t rx_len)
 {
-    USART_TypeDef *pUSART = sti_get_usart_base_address(instance);
-    if (pUSART == NULL) {
+    if (!validate_usart_handle(handle)) {
         return ST_STATUS_INVALID_PARAMETER;
     }
-    pUSART->CR1_b.RE = ENABLE;
-    while (rx_len > 0) {
-        if (pUSART->SR_b.RXNE) {
-            *(rx_buf) = (uint8_t)pUSART->DR_b.DR;
-            rx_buf++;
-            rx_len--;
+    if (handle->state != USART_STATE_READY) {
+        return ST_STATUS_BUSY;
+    }
+    handle->state = USART_STATE_BUSY_RX;
+    handle->pUSART->CR1_b.RE = ENABLE;
+    handle->pRxBuffer = rx_buf;
+    handle->rx_size = rx_len;
+    handle->rx_count = 0;
+    while (handle->rx_count < handle->rx_size) {
+        if (handle->pUSART->SR_b.RXNE) {
+            handle->pRxBuffer[handle->rx_count++] = (uint8_t)handle->pUSART->DR_b.DR;
         }
     }
-    pUSART->CR1_b.RE = DISABLE;
+    handle->pUSART->CR1_b.RE = DISABLE;
+    handle->state = USART_STATE_READY;
     return ST_STATUS_OK;
 }
 
@@ -240,8 +293,21 @@ st_status_t st_usart_receive_data_blocking(st_usart_instance_t instance, uint8_t
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_send_data_non_blocking(st_usart_instance_t instance, uint8_t *tx_buf, uint16_t tx_len)
+st_status_t st_usart_send_data_non_blocking(st_usart_handle_t *handle, uint8_t *tx_buf, uint16_t tx_len)
 {
+    if (!validate_usart_handle(handle))
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    if (handle->state != USART_STATE_READY) {
+        return ST_STATUS_BUSY;
+    }
+    handle->state = USART_STATE_BUSY_TX;
+    handle->pUSART->CR1_b.TE = ENABLE;
+    handle->pTxBuffer = tx_buf;
+    handle->tx_size = tx_len;
+    handle->tx_count = 0;
+    handle->pUSART->CR1_b.TXEIE = ENABLE;
     return ST_STATUS_OK;
 }
 
@@ -257,8 +323,21 @@ st_status_t st_usart_send_data_non_blocking(st_usart_instance_t instance, uint8_
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_receive_data_non_blocking(st_usart_instance_t instance, uint8_t *rx_buf, uint16_t rx_len)
+st_status_t st_usart_receive_data_non_blocking(st_usart_handle_t *handle, uint8_t *rx_buf, uint16_t rx_len)
 {
+    if (!validate_usart_handle(handle))
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    if (handle->state != USART_STATE_READY) {
+        return ST_STATUS_BUSY;
+    }
+    handle->state = USART_STATE_BUSY_RX;
+    handle->pUSART->CR1_b.RE = ENABLE;
+    handle->pRxBuffer = rx_buf;
+    handle->rx_size = rx_len;
+    handle->rx_count = 0;
+    handle->pUSART->CR1_b.RXNEIE = ENABLE;
     return ST_STATUS_OK;
 }
 
@@ -272,12 +351,27 @@ st_status_t st_usart_receive_data_non_blocking(st_usart_instance_t instance, uin
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_deinit(st_usart_instance_t instance)
+st_status_t st_usart_deinit(st_usart_handle_t *handle)
 {
+    if (!validate_usart_handle(handle)) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    sti_usart_nvic_intr_enable(handle->config.instance, DISABLE);
+    st_usart_unregister_callback(handle);
+    sti_usart_clock_control(handle->config.instance, DISABLE);
+    handle->pUSART = NULL;
+    handle->pTxBuffer = NULL;
+    handle->pRxBuffer = NULL;
+    handle->tx_size = 0;
+    handle->rx_size = 0;
+    handle->tx_count = 0;
+    handle->rx_count = 0;
+    handle->state = USART_STATE_RESET;
+    memset(&handle->config, 0, sizeof(handle->config));
     return ST_STATUS_OK;
 }
 
-st_status_t st_usart_pin_init(st_usart_io_t *pin_configs, st_usart_config_t *usart_config)
+st_status_t st_usart_pin_init(const st_usart_io_t *pin_configs, const st_usart_config_t *usart_config)
 {
     st_status_t status = ST_STATUS_OK;
     st_gpio_config_t usart_pin_config = {
@@ -353,6 +447,34 @@ st_status_t st_usart_pin_init(st_usart_io_t *pin_configs, st_usart_config_t *usa
     return status;
 }
 
+void st_usart_hal_irq_handler(st_usart_handle_t *handle)
+{
+    if (handle->pUSART->SR_b.TXE) {
+        if (handle->tx_count < handle->tx_size) {
+            handle->pUSART->DR_b.DR = handle->pTxBuffer[handle->tx_count++];
+        }
+        else {
+            handle->pUSART->CR1_b.TE = DISABLE;
+            handle->pUSART->CR1_b.TXEIE = DISABLE;
+            handle->state = USART_STATE_READY;
+            if (handle->user_callback != NULL) {
+                handle->user_callback((uint8_t)handle->config.instance, USART_EVENT_SEND_COMPLETE);
+            }
+        }
+    }
+    if (handle->pUSART->SR_b.RXNE && handle->rx_count < handle->rx_size) {
+        handle->pRxBuffer[handle->rx_count++] = (uint8_t)(handle->pUSART->DR_b.DR);
+        if (handle->rx_count == handle->rx_size - 1) {
+            handle->pUSART->CR1_b.RE = DISABLE;
+            handle->pUSART->CR1_b.RXNEIE = DISABLE;
+            handle->state = USART_STATE_READY;
+            if (handle->user_callback != NULL) {
+                handle->user_callback((uint8_t)handle->config.instance, USART_EVENT_RECEIVE_COMPLETE);
+            }
+        }
+    }
+}
+
 static void sti_usart_clock_control(st_usart_instance_t instance, uint8_t enable)
 {
     switch (instance)
@@ -412,5 +534,41 @@ static void sti_usart_set_baudrate(USART_TypeDef *pUSART, uint32_t baudrate, st_
     {
         usart_div = ((2U * USART_PERI_CLK) + (baudrate / 2U)) / baudrate; // rounding
         pUSART->BRR = (usart_div & 0xFFF0U) | ((usart_div & 0x000FU) >> 1U);
+    }
+}
+
+static bool validate_usart_handle(const st_usart_handle_t *handle)
+{
+    if (handle == NULL || handle->pUSART == NULL) {
+        return false;
+    }
+    const USART_TypeDef *pUSART = sti_get_usart_base_address(handle->config.instance);
+    if (handle->pUSART != pUSART) {
+        return false;
+    }
+    return true;
+}
+
+static void sti_usart_nvic_intr_enable(st_usart_instance_t instance, uint8_t enable)
+{
+    IRQn_Type irq;
+    switch (instance) {
+        case USART_1:
+            irq = USART1_IRQn;
+            break;
+        case USART_2:
+            irq = USART2_IRQn;
+            break;
+        case USART_6:
+            irq = USART6_IRQn;
+            break;
+        default:
+            irq = USART1_IRQn;
+    }
+    if (enable) {
+        NVIC_EnableIRQ(irq);
+        NVIC_SetPriority(irq, 0);
+    } else {
+        NVIC_DisableIRQ(irq);
     }
 }

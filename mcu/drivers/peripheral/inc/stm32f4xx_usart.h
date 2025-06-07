@@ -20,7 +20,7 @@
  * @param event A 32-bit value specifying the USART event (e.g., transmission complete,
  *              error conditions, etc.).
  */
-typedef void (*st_usart_callback_t)(uint32_t event);
+typedef void (*st_usart_callback_t)(uint8_t instance, uint32_t event);
 
 /**
  * @brief USART instance enumeration.
@@ -146,16 +146,29 @@ typedef enum
     USART_STATE_ERROR = 0x04U       // Error occurred
 } st_usart_state_t;
 
+typedef enum 
+{
+    USART_EVENT_SEND_COMPLETE,
+    USART_EVENT_RECEIVE_COMPLETE,
+    USART_EVENT_TRANSFER_COMPLETE,
+    USART_EVENT_SEND_ABORT,
+    USART_EVENT_RECEIVE_ABORT,
+    USART_EVENT_FRAMING_ERROR,
+    USART_EVENT_OVERRUN_ERROR,
+    USART_EVENT_PARITY_ERROR,
+    USART_EVENT_LAST
+} st_usart_event_status_t;
+
 typedef struct {
     USART_TypeDef *pUSART;
     st_usart_config_t config;
-    uint8_t *pTxBuffer;
+    const uint8_t *pTxBuffer;
     uint16_t tx_size;
     uint16_t tx_count;
-    uint8_t *pRxBuufer;
+    uint8_t *pRxBuffer;
     uint16_t rx_size;
     uint16_t rx_count;
-    __IO st_usart_state_t state;
+    st_usart_state_t state;
     st_usart_callback_t user_callback;
 } st_usart_handle_t;
 
@@ -196,6 +209,17 @@ st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handl
 st_status_t st_usart_register_callback(st_usart_handle_t *handle, st_usart_callback_t callback);
 
 /**
+ * @brief Un-Register a callback function for USART events.
+ *
+ * Dissassociate a user-defined callback function with a USART instance.
+ *
+ * @param instance The USART instance for which to un-register the callback.
+ *
+ * @return st_status_t status code indicating success or error.
+ */
+st_status_t st_usart_unregister_callback(st_usart_handle_t *handle);
+
+/**
  * @brief Send data in blocking mode.
  *
  * Transmits data over the specified USART instance in a blocking manner, i.e., the
@@ -207,7 +231,7 @@ st_status_t st_usart_register_callback(st_usart_handle_t *handle, st_usart_callb
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_send_data_blocking(st_usart_instance_t instance, uint8_t *tx_buf, uint16_t tx_len);
+st_status_t st_usart_send_data_blocking(st_usart_handle_t *handle, const uint8_t *tx_buf, uint16_t tx_len);
 
 /**
  * @brief Receive data in blocking mode.
@@ -221,7 +245,7 @@ st_status_t st_usart_send_data_blocking(st_usart_instance_t instance, uint8_t *t
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_receive_data_blocking(st_usart_instance_t instance, uint8_t *rx_buf, uint16_t rx_len);
+st_status_t st_usart_receive_data_blocking(st_usart_handle_t *handle, uint8_t *rx_buf, uint16_t rx_len);
 
 /**
  * @brief Send data in non-blocking mode.
@@ -235,7 +259,7 @@ st_status_t st_usart_receive_data_blocking(st_usart_instance_t instance, uint8_t
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_send_data_non_blocking(st_usart_instance_t instance, uint8_t *tx_buf, uint16_t tx_len);
+st_status_t st_usart_send_data_non_blocking(st_usart_handle_t *handle, uint8_t *tx_buf, uint16_t tx_len);
 
 /**
  * @brief Receive data in non-blocking mode.
@@ -249,7 +273,7 @@ st_status_t st_usart_send_data_non_blocking(st_usart_instance_t instance, uint8_
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_receive_data_non_blocking(st_usart_instance_t instance, uint8_t *rx_buf, uint16_t rx_len);
+st_status_t st_usart_receive_data_non_blocking(st_usart_handle_t *handle, uint8_t *rx_buf, uint16_t rx_len);
 
 /**
  * @brief De-initialize the specified USART instance.
@@ -261,9 +285,11 @@ st_status_t st_usart_receive_data_non_blocking(st_usart_instance_t instance, uin
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_deinit(st_usart_instance_t instance);
+st_status_t st_usart_deinit(st_usart_handle_t *handle);
 
-st_status_t st_usart_pin_init(st_usart_io_t *pin_configs, st_usart_config_t *usart_config);
+st_status_t st_usart_pin_init(const st_usart_io_t *pin_configs, const st_usart_config_t *usart_config);
+
+void st_usart_hal_irq_handler(st_usart_handle_t *handle);
 
 #define RCC_USART2_PERI_CLK_EN() (RCC->APB1ENR |= 1 << RCC_APB1ENR_USART2EN_Pos)
 #define RCC_USART2_PERI_CLK_DIS() (RCC->APB1ENR &= ~(1 << RCC_APB1ENR_USART2EN_Pos))
