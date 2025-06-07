@@ -17,20 +17,70 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-#include "stm32f4xx_debug.h"
+#include "stm32f4xx_usart.h"
+
+#define UART_BUFFER_SIZE        26
+static uint8_t rx_buffer[UART_BUFFER_SIZE];
+st_usart_handle_t usart2_handle;
+static void usart_callback_event(uint8_t instance, uint32_t event);
+volatile bool receive_complete = false;
 
 int main(void)
 {
-    int a = 10;
-    st_debug_init();
+    st_status_t status;
+    st_usart_io_t uart2_io;
+    st_usart_config_t uart2_config = {
+        .instance = USART_2,
+        .baudrate = 115200,
+        .clock_mode = USART_CPOL0_CPHA0,
+        .mode = USART_MODE_ASYNCHRONOUS,
+        .stop_bits = USART_STOP_BIT_1,
+        .parity = USART_PARITY_NONE,
+        .is_flow_control_enable = false,
+        .oversampling = USART_OVERSAMPLING_16
+    };
+    do {
+        GPIOA_PERI_CLK_EN();
+        status = st_usart_init(USART_2, &usart2_handle);
+        if (status != ST_STATUS_OK) {
+            break;
+        }
+        status = st_usart_set_configuration(&uart2_config, &usart2_handle, &uart2_io);
+        if (status != ST_STATUS_OK) {
+            break;
+        }
+
+        status = st_usart_register_callback(&usart2_handle, usart_callback_event);
+        if (status != ST_STATUS_OK) {
+            break;
+        }
+    } while (false);
+
+    status = st_usart_receive_data_non_blocking(&usart2_handle, rx_buffer, UART_BUFFER_SIZE);
     while (1) {
-        LOG_INFO("Value of a = %d\n", a);
-        LOG_WARNING("Value of a = %d\n", a);
-        LOG_ERROR("Value of a = %d\n", a);
-        LOG_DEBUG("Value of a = %d\n", a);
-        // DEBUG_LOG_RAW("Value of a = 10\n");
-        for (uint32_t i=0; i<0xFFFFFF; i++);
+        if (receive_complete) {
+            st_usart_deinit(&usart2_handle);
+            receive_complete = false;
+        }
     }
     return 0;
+}
+
+static void usart_callback_event(uint8_t instance, uint32_t event)
+{
+    (void)instance;
+    switch (event) {
+        case USART_EVENT_SEND_COMPLETE:
+            break;
+        case USART_EVENT_RECEIVE_COMPLETE:
+            receive_complete = true;
+            break;
+        case USART_EVENT_TRANSFER_COMPLETE:
+            break;
+    }
+}
+
+void USART2_IRQHandler(void)
+{
+    st_usart_hal_irq_handler(&usart2_handle);
 }
