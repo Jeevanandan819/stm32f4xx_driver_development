@@ -13,3 +13,4 @@ typedef uint32_t st_status_t;
 #define ST_STATUS_INVALID_RANGE                (st_status_t)0x00000004
 #define ST_STATUS_NOT_INITIALIZED              (st_status_t)0x00000005
 #define ST_STATUS_NOT_SUPPORTED                (st_status_t)0x00000006 
+#define ST_STATUS_NULL_PARAMETER               (st_status_t)0x00000007
