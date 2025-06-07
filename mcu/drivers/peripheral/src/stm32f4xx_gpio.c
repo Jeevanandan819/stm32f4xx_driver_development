@@ -172,7 +172,7 @@ st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin)
  *
  * @return The current state of the pin (0 for low, 1 for high).
  */
-uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin)
+uint8_t st_gpio_get_pin(const GPIO_TypeDef *pGPIO, st_gpio_pin_t pin)
 {
     if (pin >= GPIO_PIN_LAST || pGPIO == NULL)
     {
@@ -222,15 +222,15 @@ st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8
  *          - ST_SUCCESS: Configuration completed successfully.
  *          - ST_ERROR: An error occurred during configuration (e.g., invalid parameters).
  */
-st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
+st_status_t st_gpio_set_configuration(const st_gpio_config_t *gpio_config)
 {
-    // if (gpio_config->pin >= GPIO_PIN_LAST || gpio_config->mode >= GPIO_MODE_LAST ||
-    //     gpio_config->otype >= GPIO_OTYPE_LAST || gpio_config->port >= GPIO_PORT_LAST ||
-    //     gpio_config->pupd_config >= GPIO_PUPD_LAST || gpio_config->alt_fn >= GPIO_ALT_FN_LAST ||
-    //     gpio_config->ospeed >= GPIO_SPEED_LAST)
-    // {
-    //     return ST_STATUS_INVALID_PARAMETER;
-    // }
+    if (gpio_config->pin >= GPIO_PIN_LAST || gpio_config->mode >= GPIO_MODE_LAST ||
+        gpio_config->otype >= GPIO_OTYPE_LAST || gpio_config->port >= GPIO_PORT_LAST ||
+        gpio_config->pupd_config >= GPIO_PUPD_LAST || gpio_config->alt_fn >= GPIO_ALT_FN_LAST ||
+        gpio_config->ospeed >= GPIO_SPEED_LAST)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
     if (gpio_config == NULL)
     {
         return ST_STATUS_INVALID_PARAMETER;
@@ -291,7 +291,7 @@ st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config)
  *
  * @return Status of the configuration operation (success or error).
  */
-st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag, st_gpio_intr_callback callback_function)
+st_status_t st_gpio_config_interrupt(const st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag, st_gpio_intr_callback callback_function)
 {
     if (gpio_port_pin == NULL)
     {
@@ -391,13 +391,13 @@ void EXTI4_IRQHandler(void)
 void EXTI9_5_IRQHandler(void)
 {
     int channel = __builtin_ctz(EXTI->PR);
-    st_gpio_clear_interrupt(channel);
+    st_gpio_clear_interrupt((uint8_t)channel);
     gpio_intr_callbacks[channel]((uint8_t)channel);
 }
 
 void EXTI15_10_IRQHandler(void)
 {
     int channel = __builtin_ctz(EXTI->PR);
-    st_gpio_clear_interrupt(channel);
+    st_gpio_clear_interrupt((uint8_t)channel);
     gpio_intr_callbacks[channel]((uint8_t)channel);
 }

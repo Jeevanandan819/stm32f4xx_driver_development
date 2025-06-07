@@ -266,7 +266,7 @@ st_status_t st_gpio_toggle_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin);
  *
  * @return The current state of the pin (0 for low, 1 for high).
  */
-uint8_t st_gpio_get_pin(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin);
+uint8_t st_gpio_get_pin(const GPIO_TypeDef *pGPIO, st_gpio_pin_t pin);
 
 /**
  * @brief Sets or resets a specific GPIO pin in the given GPIO port.
@@ -294,7 +294,7 @@ st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8
  *          - ST_SUCCESS: Configuration completed successfully.
  *          - ST_ERROR: An error occurred during configuration (e.g., invalid parameters).
  */
-st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config);
+st_status_t st_gpio_set_configuration(const st_gpio_config_t *gpio_config);
 
 /**
  * @brief Configures an interrupt for a specific GPIO pin and assigns a callback function.
@@ -311,7 +311,7 @@ st_status_t st_gpio_set_configuration(st_gpio_config_t *gpio_config);
  *
  * @return Status of the configuration operation (success or error).
  */
-st_status_t st_gpio_config_interrupt(st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag, st_gpio_intr_callback callback_function);
+st_status_t st_gpio_config_interrupt(const st_gpio_t *gpio_port_pin, st_gpio_intr_flag_t intr_flag, st_gpio_intr_callback callback_function);
 
 #define GPIOA_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 0))
 #define GPIOB_PERI_CLK_EN()         (RCC->AHB1ENR |= (1 << 1))
