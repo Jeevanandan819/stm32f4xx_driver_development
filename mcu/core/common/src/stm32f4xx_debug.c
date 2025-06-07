@@ -6,8 +6,10 @@
 #define LOGGING_OVER_UART       0
 #define LOGGING_OVER_SWO        1
 
-#define DEBUG_LOG_MODULE        LOGGING_OVER_SWO
+#define DEBUG_LOG_MODULE        LOGGING_OVER_UART
 #define UART_DEBUG_INSTANCE     USART_2
+
+st_usart_handle_t debug_uart_handle;
 
 /**
  * @brief  Initializes the debug logger (e.g., UART/SWO configuration).
@@ -25,16 +27,16 @@ st_status_t st_debug_init(void)
         .stop_bits = USART_STOP_BIT_1,
         .parity = USART_PARITY_NONE,
         .is_flow_control_enable = false,
-        .oversampling = USART_OVERSAMPLING_8
+        .oversampling = USART_OVERSAMPLING_16
     };
     st_usart_io_t debug_uart_io;
     do {
         GPIOA_PERI_CLK_EN();
-        status = st_usart_init(UART_DEBUG_INSTANCE);
+        status = st_usart_init(UART_DEBUG_INSTANCE, &debug_uart_handle);
         if (status != ST_STATUS_OK) {
             break;
         }
-        status = st_usart_set_configuration(&debug_uart_config, &debug_uart_io);
+        status = st_usart_set_configuration(&debug_uart_config, &debug_uart_handle, &debug_uart_io);
         if (status != ST_STATUS_OK) {
             break;
         }
@@ -53,7 +55,7 @@ void st_debug_log_send_str(const char *str)
 {
     #if defined(DEBUG_LOG_MODULE) && (DEBUG_LOG_MODULE == LOGGING_OVER_UART)
     if (str != NULL) {
-        st_usart_send_data_blocking(UART_DEBUG_INSTANCE, (uint8_t*)str, strlen(str));
+        st_usart_send_data_blocking(&debug_uart_handle, (uint8_t*)str, (uint16_t)strlen(str));
     }
     #elif defined(DEBUG_LOG_MODULE) && (DEBUG_LOG_MODULE == LOGGING_OVER_SWO)
     for (uint32_t idx=0; idx<strlen(str); idx++) {
