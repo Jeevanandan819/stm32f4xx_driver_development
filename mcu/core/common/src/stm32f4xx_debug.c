@@ -27,11 +27,11 @@ st_status_t st_debug_init(void)
         .stop_bits = USART_STOP_BIT_1,
         .parity = USART_PARITY_NONE,
         .is_flow_control_enable = false,
-        .oversampling = USART_OVERSAMPLING_16
+        .oversampling = USART_OVERSAMPLING_16,
+        .word_length = USART_WORD_LENGTH_8
     };
     st_usart_io_t debug_uart_io;
     do {
-        GPIOA_PERI_CLK_EN();
         status = st_usart_init(UART_DEBUG_INSTANCE, &debug_uart_handle);
         if (status != ST_STATUS_OK) {
             break;
@@ -50,6 +50,22 @@ st_status_t st_debug_init(void)
     #endif
     return status;
 }
+
+#if defined(DEBUG_LOG_MODULE) && (DEBUG_LOG_MODULE == LOGGING_OVER_UART)
+int _write(int file, char *ptr, int len)
+{
+    (void)file;
+    st_usart_send_data_blocking(&debug_uart_handle, (uint8_t*)ptr, (uint16_t)len);
+    return len;
+}
+#elif defined(DEBUG_LOG_MODULE) && (DEBUG_LOG_MODULE == LOGGING_OVER_SWO)
+int _write(int file, char *ptr, int len)
+{
+    for (uint32_t idx=0; idx<strlen(str); idx++) {
+        ITM_SendChar(str[idx]);
+    }
+}
+#endif
 
 void st_debug_log_send_str(const char *str)
 {
