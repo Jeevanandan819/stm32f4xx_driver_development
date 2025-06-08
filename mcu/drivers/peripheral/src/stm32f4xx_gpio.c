@@ -50,7 +50,7 @@ st_status_t st_gpio_set_otype(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_ot
     }
 
     pGPIO->OTYPER &= ~(1 << pin);
-    pGPIO->OTYPER |= (1 << pin);
+    pGPIO->OTYPER |= (otype << pin);
     return ST_STATUS_OK;
 }
 
@@ -105,8 +105,8 @@ st_status_t st_gpio_set_pin_mux(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, st_gpio_
     {
         return ST_STATUS_INVALID_PARAMETER;
     }
-    pGPIO->AFR[pin / 8] &= ~(0x0F << (pin * 4));
-    pGPIO->AFR[pin / 8] |= (alt_fn << (pin * 4));
+    pGPIO->AFR[pin / 8] &= ~(0x0F << ((pin % 8) * 4));
+    pGPIO->AFR[pin / 8] |= (alt_fn << ((pin % 8) * 4));
     return ST_STATUS_OK;
 }
 
@@ -224,14 +224,14 @@ st_status_t st_gpio_port_set_reset(GPIO_TypeDef *pGPIO, st_gpio_pin_t pin, uint8
  */
 st_status_t st_gpio_set_configuration(const st_gpio_config_t *gpio_config)
 {
+    if (gpio_config == NULL)
+    {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
     if (gpio_config->pin >= GPIO_PIN_LAST || gpio_config->mode >= GPIO_MODE_LAST ||
         gpio_config->otype >= GPIO_OTYPE_LAST || gpio_config->port >= GPIO_PORT_LAST ||
         gpio_config->pupd_config >= GPIO_PUPD_LAST || gpio_config->alt_fn >= GPIO_ALT_FN_LAST ||
         gpio_config->ospeed >= GPIO_SPEED_LAST)
-    {
-        return ST_STATUS_INVALID_PARAMETER;
-    }
-    if (gpio_config == NULL)
     {
         return ST_STATUS_INVALID_PARAMETER;
     }
