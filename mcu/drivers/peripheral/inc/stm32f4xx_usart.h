@@ -193,7 +193,7 @@ st_status_t st_usart_init(st_usart_instance_t instance, st_usart_handle_t *handl
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handle_t *handle, st_usart_io_t *usart_pin_config);
+st_status_t st_usart_set_configuration(const st_usart_config_t *config, st_usart_handle_t *handle, const st_usart_io_t *usart_pin_config);
 
 /**
  * @brief Register a callback function for USART events.
@@ -259,7 +259,7 @@ st_status_t st_usart_receive_data_blocking(st_usart_handle_t *handle, uint8_t *r
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_send_data_non_blocking(st_usart_handle_t *handle, uint8_t *tx_buf, uint16_t tx_len);
+st_status_t st_usart_send_data_non_blocking(st_usart_handle_t *handle, const uint8_t *tx_buf, uint16_t tx_len);
 
 /**
  * @brief Receive data in non-blocking mode.

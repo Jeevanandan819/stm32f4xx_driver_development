@@ -84,7 +84,7 @@ st_status_t st_usart_init(st_usart_instance_t instance, st_usart_handle_t *handl
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_set_configuration(st_usart_config_t *config, st_usart_handle_t *handle, st_usart_io_t *usart_pin_config)
+st_status_t st_usart_set_configuration(const st_usart_config_t *config, st_usart_handle_t *handle, const st_usart_io_t *usart_pin_config)
 {
     if (config == NULL || handle == NULL)
     {
@@ -236,11 +236,10 @@ st_status_t st_usart_send_data_blocking(st_usart_handle_t *handle, const uint8_t
     handle->tx_count = 0;
     while (handle->tx_count < handle->tx_size)
     {
-        if (handle->pUSART->SR_b.TXE == 1)
-        {
-            handle->pUSART->DR_b.DR = tx_buf[handle->tx_count++];
-        }
+        while (!handle->pUSART->SR_b.TXE);
+        handle->pUSART->DR_b.DR = tx_buf[handle->tx_count++];
     }
+    while(!handle->pUSART->SR_b.TC);
     handle->pUSART->CR1_b.TE = DISABLE;
     handle->state = USART_STATE_READY;
     return ST_STATUS_OK;
@@ -272,9 +271,8 @@ st_status_t st_usart_receive_data_blocking(st_usart_handle_t *handle, uint8_t *r
     handle->rx_size = rx_len;
     handle->rx_count = 0;
     while (handle->rx_count < handle->rx_size) {
-        if (handle->pUSART->SR_b.RXNE) {
-            handle->pRxBuffer[handle->rx_count++] = (uint8_t)handle->pUSART->DR_b.DR;
-        }
+        while(!handle->pUSART->SR_b.RXNE);
+        handle->pRxBuffer[handle->rx_count++] = (uint8_t)handle->pUSART->DR_b.DR;
     }
     handle->pUSART->CR1_b.RE = DISABLE;
     handle->state = USART_STATE_READY;
@@ -293,7 +291,7 @@ st_status_t st_usart_receive_data_blocking(st_usart_handle_t *handle, uint8_t *r
  *
  * @return st_status_t status code indicating success or error.
  */
-st_status_t st_usart_send_data_non_blocking(st_usart_handle_t *handle, uint8_t *tx_buf, uint16_t tx_len)
+st_status_t st_usart_send_data_non_blocking(st_usart_handle_t *handle, const uint8_t *tx_buf, uint16_t tx_len)
 {
     if (!validate_usart_handle(handle))
     {
@@ -385,11 +383,14 @@ st_status_t st_usart_pin_init(const st_usart_io_t *pin_configs, const st_usart_c
     }
     do
     {
-        // Configure USART TX pin
         usart_pin_config.port = pin_configs->tx.port;
         usart_pin_config.pin = pin_configs->tx.pin;
         usart_pin_config.alt_fn = pin_configs->tx.alt_fn;
         usart_pin_config.pupd_config = GPIO_NOPUPD;
+        status = st_gpio_clock_control(usart_pin_config.port, ENABLE);
+        if (status != ST_STATUS_OK) {
+            break;
+        }
         status = st_gpio_set_configuration(&usart_pin_config);
         if (status != ST_STATUS_OK)
         {
@@ -400,14 +401,22 @@ st_status_t st_usart_pin_init(const st_usart_io_t *pin_configs, const st_usart_c
         usart_pin_config.pin = pin_configs->rx.pin;
         usart_pin_config.alt_fn = pin_configs->rx.alt_fn;
         usart_pin_config.pupd_config = GPIO_PU;
+        status = st_gpio_clock_control(usart_pin_config.port, ENABLE);
+        if (status != ST_STATUS_OK) {
+            break;
+        }
         status = st_gpio_set_configuration(&usart_pin_config);
         if (status != ST_STATUS_OK)
         {
             break;
         }
 
-        if (usart_config->mode == USART_MODE_SYNCHRONOUS_MASTER || USART_MODE_SYNCHRONOUS_SLAVE)
+        if (usart_config->mode == USART_MODE_SYNCHRONOUS_MASTER || usart_config->mode == USART_MODE_SYNCHRONOUS_SLAVE)
         {
+            status = st_gpio_clock_control(usart_pin_config.port, ENABLE);
+            if (status != ST_STATUS_OK) {
+                break;
+            }
             usart_pin_config.port = pin_configs->clk.port;
             usart_pin_config.pin = pin_configs->clk.pin;
             usart_pin_config.alt_fn = pin_configs->clk.alt_fn;
@@ -426,6 +435,10 @@ st_status_t st_usart_pin_init(const st_usart_io_t *pin_configs, const st_usart_c
                 usart_pin_config.pin = pin_configs->cts.pin;
                 usart_pin_config.alt_fn = pin_configs->cts.alt_fn;
                 usart_pin_config.pupd_config = GPIO_PU;
+                status = st_gpio_clock_control(usart_pin_config.port, ENABLE);
+                if (status != ST_STATUS_OK) {
+                    break;
+                }
                 status = st_gpio_set_configuration(&usart_pin_config);
                 if (status != ST_STATUS_OK)
                 {
@@ -436,6 +449,10 @@ st_status_t st_usart_pin_init(const st_usart_io_t *pin_configs, const st_usart_c
                 usart_pin_config.pin = pin_configs->rts.pin;
                 usart_pin_config.alt_fn = pin_configs->rts.alt_fn;
                 usart_pin_config.pupd_config = GPIO_NOPUPD;
+                status = st_gpio_clock_control(usart_pin_config.port, ENABLE);
+                if (status != ST_STATUS_OK) {
+                    break;
+                }
                 status = st_gpio_set_configuration(&usart_pin_config);
                 if (status != ST_STATUS_OK)
                 {
@@ -454,11 +471,13 @@ void st_usart_hal_irq_handler(st_usart_handle_t *handle)
             handle->pUSART->DR_b.DR = handle->pTxBuffer[handle->tx_count++];
         }
         else {
-            handle->pUSART->CR1_b.TE = DISABLE;
-            handle->pUSART->CR1_b.TXEIE = DISABLE;
-            handle->state = USART_STATE_READY;
-            if (handle->user_callback != NULL) {
-                handle->user_callback((uint8_t)handle->config.instance, USART_EVENT_SEND_COMPLETE);
+            if (handle->pUSART->SR_b.TC) {
+                handle->pUSART->CR1_b.TE = DISABLE;
+                handle->pUSART->CR1_b.TXEIE = DISABLE;
+                handle->state = USART_STATE_READY;
+                if (handle->user_callback != NULL) {
+                    handle->user_callback((uint8_t)handle->config.instance, USART_EVENT_SEND_COMPLETE);
+                }
             }
         }
     }
