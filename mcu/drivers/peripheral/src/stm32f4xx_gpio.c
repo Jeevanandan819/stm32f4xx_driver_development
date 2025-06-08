@@ -323,6 +323,41 @@ st_status_t st_gpio_config_interrupt(const st_gpio_t *gpio_port_pin, st_gpio_int
     return ST_STATUS_OK;
 }
 
+/**
+ * @brief Enables or disables the peripheral clock for the specified GPIO port.
+ *
+ * This function enables or disables the clock for the given GPIO port.
+ * It is necessary to enable the port's clock before accessing any GPIO registers
+ * or configuring GPIO pins on that port.
+ *
+ * @param[in] port     GPIO port identifier. Must be a valid value of `st_gpio_port_t`.
+ *                     Example values: GPIO_PORT_A, GPIO_PORT_B, etc.
+ *
+ * @param[in] enable   Set to `1` to enable the clock, or `0` to disable it.
+ *
+ * @return ST_STATUS_OK on success,
+ *         ST_STATUS_INVALID_PARAMETER if the port is invalid.
+ *
+ * @note This function must be called before using any GPIO pins of the specified port.
+ *       Failing to enable the clock will result in undefined behavior when accessing GPIO registers.
+ *
+ * @example
+ *     st_gpio_clock_control(GPIO_A, 1); // Enable clock for GPIOA
+ *     st_gpio_clock_control(GPIO_B, 0); // Disable clock for GPIOB
+ */
+st_status_t st_gpio_clock_control(st_gpio_port_t port, uint8_t enable)
+{
+    if (port >= GPIO_PORT_LAST) {
+        return ST_STATUS_INVALID_PARAMETER;
+    }
+    if (enable) {
+        RCC->AHB1ENR |= (1 << port);
+    } else {
+        RCC->AHB1ENR &= ~(1 << port);
+    }
+    return ST_STATUS_OK;
+}
+
 static GPIO_TypeDef *get_gpio_base_address(st_gpio_port_t port)
 {
     GPIO_TypeDef *pGPIO = NULL;
