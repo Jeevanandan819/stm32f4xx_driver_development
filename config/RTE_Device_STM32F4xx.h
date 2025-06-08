@@ -4,7 +4,7 @@
 
 #if defined(USE_RTE_PIN_MAPPING) && (USE_RTE_PIN_MAPPING == 1)
 /* USART1 TX pin */
-#define RTE_USART1_TX_PORT_ID   0
+#define RTE_USART1_TX_PORT_ID   1
 #if (RTE_USART1_TX_PORT_ID == 0)
 #define RTE_USART1_TX_PORT       GPIO_A
 #define RTE_USART1_TX_PIN        GPIO9
@@ -16,7 +16,7 @@
 #endif
 
 /* USART1 RX pin */
-#define RTE_USART1_RX_PORT_ID   0
+#define RTE_USART1_RX_PORT_ID   1
 #if (RTE_USART1_RX_PORT_ID == 0)
 #define RTE_USART1_RX_PORT       GPIO_A
 #define RTE_USART1_RX_PIN        GPIO10
