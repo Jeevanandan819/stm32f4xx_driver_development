@@ -439,11 +439,59 @@ typedef struct
     __IO uint32_t APB1LPENR;  /*!< RCC APB1 peripheral clock enable in low power mode register, Address offset: 0x60 */
     __IO uint32_t APB2LPENR;  /*!< RCC APB2 peripheral clock enable in low power mode register, Address offset: 0x64 */
     uint32_t RESERVED5[2];    /*!< Reserved, 0x68-0x6C                                                               */
-    __IO uint32_t BDCR;       /*!< RCC Backup domain control register,                          Address offset: 0x70 */
-    __IO uint32_t CSR;        /*!< RCC clock control & status register,                         Address offset: 0x74 */
+    union {
+        __IO uint32_t BDCR;       /*!< RCC Backup domain control register,                          Address offset: 0x70 */
+        struct {
+            __IOM uint32_t LSEON      : 1;
+            __IM  uint32_t LSERDY     : 1;
+            __IOM uint32_t LSEBYP     : 1;
+            __IOM uint32_t LSEMOD     : 1;
+            __IOM uint32_t RESERVED0  : 4;
+            __IOM uint32_t RTCSEL     : 2;
+            __IOM uint32_t RESERVED1  : 5;
+            __IOM uint32_t RTCEN      : 1;
+            __OM  uint32_t BDRST      : 1;
+            __IOM uint32_t RESERVED2  : 15;
+        } BDCR_b;
+    };
+    union {
+        __IO uint32_t CSR;        /*!< RCC clock control & status register,                         Address offset: 0x74 */
+        struct {
+            __IM  uint32_t LSIRDY     : 1;
+            __IOM uint32_t LSION      : 1;
+            __IOM uint32_t RESERVED0  : 22;
+            __OM  uint32_t RMVF       : 1;
+            __IM  uint32_t BORRSTF    : 1;
+            __IM  uint32_t PINRSTF    : 1;
+            __IM  uint32_t PORRSTF    : 1;
+            __IM  uint32_t SFTRSTF    : 1;
+            __IM  uint32_t IWDGRSTF   : 1;
+            __IM  uint32_t WWDGRSTF   : 1;
+            __IM  uint32_t LPWRRSTF   : 1;
+        }CSR_b;
+    };
+    
     uint32_t RESERVED6[2];    /*!< Reserved, 0x78-0x7C                                                               */
-    __IO uint32_t SSCGR;      /*!< RCC spread spectrum clock generation register,               Address offset: 0x80 */
-    __IO uint32_t PLLI2SCFGR; /*!< RCC PLLI2S configuration register,                           Address offset: 0x84 */
+    union {
+        __IO uint32_t SSCGR;      /*!< RCC spread spectrum clock generation register,               Address offset: 0x80 */
+        struct {
+            __IOM uint32_t MODPER     : 13;
+            __IOM uint32_t INCSTEP    : 15;
+            __IOM uint32_t RESERVED0  : 2;
+            __IOM uint32_t SPREADSEL  : 1;
+            __IOM uint32_t SSCGEN     : 1;
+        }SSCGR_b;
+    };
+    union {
+        __IO uint32_t PLLI2SCFGR; /*!< RCC PLLI2S configuration register,                           Address offset: 0x84 */
+        struct {
+            __IOM uint32_t PLLI2SM    : 6;
+            __IOM uint32_t PLLI2SN    : 9;
+            __IOM uint32_t RESERVED0  : 13;
+            __IOM uint32_t PLLI2SR    : 3;
+            __IOM uint32_t RESERVED1  : 1;
+        }PLLI2SCFGR_b;
+    };
     uint32_t RESERVED7[1];    /*!< Reserved, 0x88                                                                    */
     __IO uint32_t DCKCFGR;    /*!< RCC Dedicated Clocks configuration register,                 Address offset: 0x8C */
 } RCC_TypeDef;
@@ -474,7 +522,7 @@ typedef struct
     __IO uint32_t ALRMASSR; /*!< RTC alarm A sub second register,                          Address offset: 0x44 */
     __IO uint32_t ALRMBSSR; /*!< RTC alarm B sub second register,                          Address offset: 0x48 */
     uint32_t RESERVED7;     /*!< Reserved, 0x4C                                                                 */
-    __IO uint32_t BKP0R;    /*!< RTC backup register 1,                                    Address offset: 0x50 */
+    __IO uint32_t BKP0R;    /*!< RTC backup register 0,                                    Address offset: 0x50 */
     __IO uint32_t BKP1R;    /*!< RTC backup register 1,                                    Address offset: 0x54 */
     __IO uint32_t BKP2R;    /*!< RTC backup register 2,                                    Address offset: 0x58 */
     __IO uint32_t BKP3R;    /*!< RTC backup register 3,                                    Address offset: 0x5C */
