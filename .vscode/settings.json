@@ -9,6 +9,9 @@
         "rte_device_stm32f4xx.h": "c",
         "stm32f4xx.h": "c",
         "string.h": "c",
-        "stm32f4xx_debug.h": "c"
+        "stm32f4xx_debug.h": "c",
+        "stdbool.h": "c",
+        "st_shell_config.h": "c"
     },
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\debug\\compile_commands.json",
 }
