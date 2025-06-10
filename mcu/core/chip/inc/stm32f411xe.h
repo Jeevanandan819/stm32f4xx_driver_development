@@ -334,10 +334,90 @@ typedef struct
 
 typedef struct
 {
-    __IO uint32_t CR;         /*!< RCC clock control register,                                  Address offset: 0x00 */
-    __IO uint32_t PLLCFGR;    /*!< RCC PLL configuration register,                              Address offset: 0x04 */
-    __IO uint32_t CFGR;       /*!< RCC clock configuration register,                            Address offset: 0x08 */
-    __IO uint32_t CIR;        /*!< RCC clock interrupt register,                                Address offset: 0x0C */
+    union {
+        __IO uint32_t CR;         /*!< RCC clock control register,                                  Address offset: 0x00 */
+        struct {
+            __IOM uint32_t HSION:1;
+            __IOM uint32_t HSIRDY:1;
+            __IOM uint32_t RESERVED1:1;
+            __IOM uint32_t HSITRIM:5;
+            __IOM uint32_t HSICAL:8;
+            __IOM uint32_t HSEON:1;
+            __IOM uint32_t HSERDY:1;
+            __IOM uint32_t HSEBYP:1;
+            __IOM uint32_t CSSON:1;
+            __IOM uint32_t RESERVED2:4;
+            __IOM uint32_t PLLON:1;
+            __IOM uint32_t PLLRDY:1;
+            __IOM uint32_t PLLI2SON:1;
+            __IOM uint32_t PLLI2SRDY:1;
+            __IOM uint32_t RESERVED3:4;
+        } CR_b;
+    };
+
+    union {
+        __IO uint32_t PLLCFGR;    /*!< RCC PLL configuration register,                              Address offset: 0x04 */
+        struct {
+            __IOM uint32_t PLLM:6;
+            __IOM uint32_t PLLN:9;
+            __IOM uint32_t RESERVED1:1;
+            __IOM uint32_t PLLP:2;
+            __IOM uint32_t RESERVED2:4;
+            __IOM uint32_t PLLSRC:1;
+            __IOM uint32_t RESERVED3:1;
+            __IOM uint32_t PLLQ:4;
+            __IOM uint32_t RESERVED4:4;
+        } PLLCFGR_b;
+    };
+    
+    union {
+        __IO uint32_t CFGR;       /*!< RCC clock configuration register,                            Address offset: 0x08 */
+        struct {
+            __IOM uint32_t SW:2;
+            __IOM uint32_t SWS:2;
+            __IOM uint32_t HPRE:4;
+            __IOM uint32_t RESERVED1:2;
+            __IOM uint32_t PPRE1:3;
+            __IOM uint32_t PPRE2:3;
+            __IOM uint32_t RTCPRE:5;
+            __IOM uint32_t MCO1:2;
+            __IOM uint32_t I2SSRC:1;
+            __IOM uint32_t MCO1PRE:3;
+            __IOM uint32_t MCO2PRE:3;
+            __IOM uint32_t MCO2:2;
+        } CFGR_b;
+    };
+
+    union {
+        __IO uint32_t CIR;        /*!< RCC clock interrupt register,                                Address offset: 0x0C */
+        struct {
+            __IOM uint32_t LSIRDYF:1;
+            __IOM uint32_t LSERDYF:1;
+            __IOM uint32_t HSIRDYF:1;
+            __IOM uint32_t HSERDYF:1;
+            __IOM uint32_t PLLRDYF:1;
+            __IOM uint32_t PLLI2SRDYF:1;
+            __IOM uint32_t RESERVED1:1;
+            __IOM uint32_t CSSF:1;
+            __IOM uint32_t LSIRDYIE:1;
+            __IOM uint32_t LSERDYIE:1;
+            __IOM uint32_t HSIRDYIE:1;
+            __IOM uint32_t HSERDYIE:1;
+            __IOM uint32_t PLLRDYIE:1;
+            __IOM uint32_t PLLI2SRDYIE:1;
+            __IOM uint32_t RESERVED2:2;
+            __IOM uint32_t LSIRDYC:1;
+            __IOM uint32_t LSERDYC:1;
+            __IOM uint32_t HSIRDYC:1;
+            __IOM uint32_t HSERDYC:1;
+            __IOM uint32_t PLLRDYC:1;
+            __IOM uint32_t PLLI2SRDYC:1;
+            __IOM uint32_t RESERVED3:1;
+            __IOM uint32_t CSSC:1;
+            __IOM uint32_t RESERVED4:8;
+        } CIR_b;
+    };
+    
     __IO uint32_t AHB1RSTR;   /*!< RCC AHB1 peripheral reset register,                          Address offset: 0x10 */
     __IO uint32_t AHB2RSTR;   /*!< RCC AHB2 peripheral reset register,                          Address offset: 0x14 */
     __IO uint32_t AHB3RSTR;   /*!< RCC AHB3 peripheral reset register,                          Address offset: 0x18 */
@@ -359,11 +439,59 @@ typedef struct
     __IO uint32_t APB1LPENR;  /*!< RCC APB1 peripheral clock enable in low power mode register, Address offset: 0x60 */
     __IO uint32_t APB2LPENR;  /*!< RCC APB2 peripheral clock enable in low power mode register, Address offset: 0x64 */
     uint32_t RESERVED5[2];    /*!< Reserved, 0x68-0x6C                                                               */
-    __IO uint32_t BDCR;       /*!< RCC Backup domain control register,                          Address offset: 0x70 */
-    __IO uint32_t CSR;        /*!< RCC clock control & status register,                         Address offset: 0x74 */
+    union {
+        __IO uint32_t BDCR;       /*!< RCC Backup domain control register,                          Address offset: 0x70 */
+        struct {
+            __IOM uint32_t LSEON      : 1;
+            __IM  uint32_t LSERDY     : 1;
+            __IOM uint32_t LSEBYP     : 1;
+            __IOM uint32_t LSEMOD     : 1;
+            __IOM uint32_t RESERVED0  : 4;
+            __IOM uint32_t RTCSEL     : 2;
+            __IOM uint32_t RESERVED1  : 5;
+            __IOM uint32_t RTCEN      : 1;
+            __OM  uint32_t BDRST      : 1;
+            __IOM uint32_t RESERVED2  : 15;
+        } BDCR_b;
+    };
+    union {
+        __IO uint32_t CSR;        /*!< RCC clock control & status register,                         Address offset: 0x74 */
+        struct {
+            __IM  uint32_t LSIRDY     : 1;
+            __IOM uint32_t LSION      : 1;
+            __IOM uint32_t RESERVED0  : 22;
+            __OM  uint32_t RMVF       : 1;
+            __IM  uint32_t BORRSTF    : 1;
+            __IM  uint32_t PINRSTF    : 1;
+            __IM  uint32_t PORRSTF    : 1;
+            __IM  uint32_t SFTRSTF    : 1;
+            __IM  uint32_t IWDGRSTF   : 1;
+            __IM  uint32_t WWDGRSTF   : 1;
+            __IM  uint32_t LPWRRSTF   : 1;
+        }CSR_b;
+    };
+    
     uint32_t RESERVED6[2];    /*!< Reserved, 0x78-0x7C                                                               */
-    __IO uint32_t SSCGR;      /*!< RCC spread spectrum clock generation register,               Address offset: 0x80 */
-    __IO uint32_t PLLI2SCFGR; /*!< RCC PLLI2S configuration register,                           Address offset: 0x84 */
+    union {
+        __IO uint32_t SSCGR;      /*!< RCC spread spectrum clock generation register,               Address offset: 0x80 */
+        struct {
+            __IOM uint32_t MODPER     : 13;
+            __IOM uint32_t INCSTEP    : 15;
+            __IOM uint32_t RESERVED0  : 2;
+            __IOM uint32_t SPREADSEL  : 1;
+            __IOM uint32_t SSCGEN     : 1;
+        }SSCGR_b;
+    };
+    union {
+        __IO uint32_t PLLI2SCFGR; /*!< RCC PLLI2S configuration register,                           Address offset: 0x84 */
+        struct {
+            __IOM uint32_t PLLI2SM    : 6;
+            __IOM uint32_t PLLI2SN    : 9;
+            __IOM uint32_t RESERVED0  : 13;
+            __IOM uint32_t PLLI2SR    : 3;
+            __IOM uint32_t RESERVED1  : 1;
+        }PLLI2SCFGR_b;
+    };
     uint32_t RESERVED7[1];    /*!< Reserved, 0x88                                                                    */
     __IO uint32_t DCKCFGR;    /*!< RCC Dedicated Clocks configuration register,                 Address offset: 0x8C */
 } RCC_TypeDef;
@@ -394,7 +522,7 @@ typedef struct
     __IO uint32_t ALRMASSR; /*!< RTC alarm A sub second register,                          Address offset: 0x44 */
     __IO uint32_t ALRMBSSR; /*!< RTC alarm B sub second register,                          Address offset: 0x48 */
     uint32_t RESERVED7;     /*!< Reserved, 0x4C                                                                 */
-    __IO uint32_t BKP0R;    /*!< RTC backup register 1,                                    Address offset: 0x50 */
+    __IO uint32_t BKP0R;    /*!< RTC backup register 0,                                    Address offset: 0x50 */
     __IO uint32_t BKP1R;    /*!< RTC backup register 1,                                    Address offset: 0x54 */
     __IO uint32_t BKP2R;    /*!< RTC backup register 2,                                    Address offset: 0x58 */
     __IO uint32_t BKP3R;    /*!< RTC backup register 3,                                    Address offset: 0x5C */
@@ -496,13 +624,102 @@ typedef struct
 
 typedef struct
 {
-    __IO uint32_t SR;   /*!< USART Status register,                   Address offset: 0x00 */
-    __IO uint32_t DR;   /*!< USART Data register,                     Address offset: 0x04 */
-    __IO uint32_t BRR;  /*!< USART Baud rate register,                Address offset: 0x08 */
-    __IO uint32_t CR1;  /*!< USART Control register 1,                Address offset: 0x0C */
-    __IO uint32_t CR2;  /*!< USART Control register 2,                Address offset: 0x10 */
-    __IO uint32_t CR3;  /*!< USART Control register 3,                Address offset: 0x14 */
-    __IO uint32_t GTPR; /*!< USART Guard time and prescaler register, Address offset: 0x18 */
+    union {
+        __IO uint32_t SR;   /*!< USART Status register,     Address offset: 0x00 */
+        struct {
+            __IM uint32_t PE:1;
+            __IM uint32_t FE:1;
+            __IM uint32_t NF:1;
+            __IM uint32_t ORE:1;
+            __IM uint32_t IDLE:1;
+            __IM uint32_t RXNE:1;
+            __IM uint32_t TC:1;
+            __IM uint32_t TXE:1;
+            __IM uint32_t LBD:1;
+            __IM uint32_t CTS:1;
+            __IOM uint32_t RESERVED1:22;
+        } SR_b;
+    };
+    union {
+        __IO uint32_t DR;   /*!< USART Status register,     Address offset: 0x00 */
+        struct {
+            __IOM uint32_t DR:9;
+            __IOM uint32_t RESERVED1:23;
+        } DR_b;
+    };
+    union {
+        __IO uint32_t BRR;   /*!< USART Status register,    Address offset: 0x00 */
+        struct {
+            __IOM uint32_t DIV_FRAC:4;
+            __IOM uint32_t DIV_MANTISSA:12;
+            __IOM uint32_t RESERVED1:16;
+        } BRR_b;
+    };
+    union {
+        __IO uint32_t CR1;   /*!< USART Status register,    Address offset: 0x00 */
+        struct {
+            __IOM uint32_t SBK:1;
+            __IOM uint32_t RWU:1;
+            __IOM uint32_t RE:1;
+            __IOM uint32_t TE:1;
+            __IOM uint32_t IDLEIE:1;
+            __IOM uint32_t RXNEIE:1;
+            __IOM uint32_t TCIE:1;
+            __IOM uint32_t TXEIE:1;
+            __IOM uint32_t PEIE:1;
+            __IOM uint32_t PS:1;
+            __IOM uint32_t PCE:1;
+            __IOM uint32_t WAKE:1;
+            __IOM uint32_t M:1;
+            __IOM uint32_t UE:1;
+            __IOM uint32_t RESERVED1:1;
+            __IOM uint32_t OVER8:1;
+            __IOM uint32_t RESERVED2:16;
+        } CR1_b;
+    };
+    union {
+        __IO uint32_t CR2;   /*!< USART Status register,    Address offset: 0x00 */
+        struct {
+            __IOM uint32_t ADD:4;
+            __IOM uint32_t RESERVED1:1;
+            __IOM uint32_t LBDL:1;
+            __IOM uint32_t LBDIE:1;
+            __IOM uint32_t RESERVED2:1;
+            __IOM uint32_t LBCL:1;
+            __IOM uint32_t CPHA:1;
+            __IOM uint32_t CPOL:1;
+            __IOM uint32_t CLKEN:1;
+            __IOM uint32_t STOP:2;
+            __IOM uint32_t LINEN:1;
+            __IOM uint32_t RESERVED3:17;
+        } CR2_b;
+    };
+    union {
+        __IO uint32_t CR3;   /*!< USART Status register,    Address offset: 0x00 */
+        struct {
+            __IOM uint32_t EIE:1;
+            __IOM uint32_t IREN:1;
+            __IOM uint32_t IRLP:1;
+            __IOM uint32_t HDSEL:1;
+            __IOM uint32_t NACK:1;
+            __IOM uint32_t SCEN:1;
+            __IOM uint32_t DMAR:1;
+            __IOM uint32_t DMAT:1;
+            __IOM uint32_t RTSE:1;
+            __IOM uint32_t CTSE:1;
+            __IOM uint32_t CTSIE:1;
+            __IOM uint32_t ONEBIT:1;
+            __IOM uint32_t RESERVED1:20;
+        } CR3_b;
+    };
+    union {
+        __IO uint32_t GTPR;   /*!< USART Status register,   Address offset: 0x00 */
+        struct {
+            __IOM uint32_t PSC:8;
+            __IOM uint32_t GT:8;
+            __IOM uint32_t RESERVED1:16;
+        } GTPR_b;
+    };
 } USART_TypeDef;
 
 /**

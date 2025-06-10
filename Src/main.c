@@ -16,17 +16,148 @@
  ******************************************************************************
  */
 
-#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "stm32f4xx_debug.h"
+
+st_usart_handle_t usart1_handle;
+void usart1_event_callback(uint8_t instance, uint32_t event);
+static volatile uint8_t usart_send_complete = false;
+
 #include "stm32f4xx.h"
+#include <stdio.h>
+
+// Utility function to print GPIO info
+void print_gpio_config(GPIO_TypeDef *port, uint8_t pin, const char *label)
+{
+    uint32_t moder = port->MODER;
+    uint32_t otyper = port->OTYPER;
+    uint32_t ospeedr = port->OSPEEDR;
+    uint32_t pupdr = port->PUPDR;
+    uint32_t afr = port->AFR[pin / 8];  // AFR[0] for pins 0–7, AFR[1] for 8–15
+
+    uint8_t mode = (moder >> (pin * 2)) & 0x3;
+    uint8_t otype = (otyper >> pin) & 0x1;
+    uint8_t speed = (ospeedr >> (pin * 2)) & 0x3;
+    uint8_t pupd = (pupdr >> (pin * 2)) & 0x3;
+    uint8_t af = (afr >> ((pin % 8) * 4)) & 0xF;
+
+    printf("--- %s (P%c%d) ---\n", label,
+           (port == GPIOA) ? 'A' :
+           (port == GPIOB) ? 'B' :
+           (port == GPIOC) ? 'C' :
+           (port == GPIOD) ? 'D' :
+           (port == GPIOE) ? 'E' :
+           (port == GPIOH) ? 'H' : '?',
+           pin);
+
+    printf("MODER: %s\n", mode == 0x2 ? "ALT_FN" : (mode == 0x1 ? "OUTPUT" : (mode == 0x0 ? "INPUT" : "ANALOG")));
+    printf("AF: AF%d\n", af);
+    printf("OTYPE: %s\n", otype == 0 ? "PUSH_PULL" : "OPEN_DRAIN");
+    printf("SPEED: %d\n", speed);
+    printf("PUPD: %s\n", pupd == 0 ? "NO PUPD" : (pupd == 1 ? "PULL-UP" : "PULL-DOWN"));
+    printf("---------------------\n");
+}
+
+void print_usart_config(USART_TypeDef *usart, const char *label)
+{
+    printf("=== %s CONFIG ===\n", label);
+    
+    printf("CR1: 0x%08lX\n", usart->CR1);
+    printf("    UE: %lu\n", (usart->CR1 >> USART_CR1_UE_Pos) & 0x1);
+    printf("    TE: %lu\n", (usart->CR1 >> USART_CR1_TE_Pos) & 0x1);
+    printf("    RE: %lu\n", (usart->CR1 >> USART_CR1_RE_Pos) & 0x1);
+    printf("    TXEIE: %lu\n", (usart->CR1 >> USART_CR1_TXEIE_Pos) & 0x1);
+    printf("    RXNEIE: %lu\n", (usart->CR1 >> USART_CR1_RXNEIE_Pos) & 0x1);
+
+    printf("CR2: 0x%08lX\n", usart->CR2);
+    printf("    STOP Bits: %lu\n", (usart->CR2 >> USART_CR2_STOP_Pos) & 0x3);
+
+    printf("CR3: 0x%08lX\n", usart->CR3);
+    printf("    CTS_EN: %lu\n", (usart->CR3 >> USART_CR3_CTSE_Pos) & 0x1);
+    printf("    RTS_EN: %lu\n", (usart->CR3 >> USART_CR3_RTSE_Pos) & 0x1);
+
+    printf("BRR: 0x%08lX\n", usart->BRR);
+
+    printf("=====================\n\n");
+}
+
 
 int main(void)
 {
-    RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOAEN);
-    GPIOA->MODER |= (1 << 10);
-    GPIOA->MODER &= ~(1 << 11);
+    st_status_t status;
+    st_usart_io_t usart1_io;
 
-    while (1) {
-        GPIOA->ODR ^= (1 << 5);
-        for (int i=0; i<0xFFFFF; i++);
+    st_usart_config_t usart1_config = {
+        .instance = USART_1,
+        .baudrate = 115200,
+        .clock_mode = USART_CPOL0_CPHA0,
+        .mode = USART_MODE_ASYNCHRONOUS,
+        .stop_bits = USART_STOP_BIT_1,
+        .parity = USART_PARITY_NONE,
+        .is_flow_control_enable = false,
+        .oversampling = USART_OVERSAMPLING_16,
+        .word_length = USART_WORD_LENGTH_8
+    };
+    do {
+        status = st_debug_init();
+        if (status != ST_STATUS_OK) {
+            printf("st_debug_init, Error Code: 0x%lX\n", status);
+            break;
+        }
+        printf("DEBUG module initialized successfully\n");
+        status = st_usart_init(USART_1, &usart1_handle);
+        if (status != ST_STATUS_OK) {
+            printf("st_usart_init, Error Code: 0x%lx\n", status);
+            break;
+        }
+        printf("USART_1 initialized successfully\n");
+
+        status = st_usart_set_configuration(&usart1_config, &usart1_handle, &usart1_io);
+        if (status != ST_STATUS_OK) {
+            printf("st_usart_set_configuration, Error Code: 0x%lX\n", status);
+            break;
+        }
+        printf("USART1 configuration is set successfully\n");
+    
+        print_gpio_config(GPIOB, 6, "USART1_TX");
+        print_gpio_config(GPIOB, 7, "USART1_RX");
+        print_usart_config(USART1, "USART1");
+
+        status = st_usart_register_callback(&usart1_handle, usart1_event_callback);
+        if (status != ST_STATUS_OK) {
+            printf("st_usart_register_callback, Error Code: 0x%lX\n", status);
+            break;
+        }
+        printf("USART1 callback registered successfully\n");
+    } while (false);
+
+    while (true) {
+        st_usart_send_data_non_blocking(&usart1_handle, (uint8_t*)"Hello", (uint16_t)strlen("Hello"));
+        while(!usart_send_complete);
+        usart_send_complete = false;
+        for (uint32_t i=0; i<0xFFFF; i++);
     }
+    return 0;
+}
+
+void usart1_event_callback(uint8_t instance, uint32_t event)
+{
+    printf("Instance : %u\n", instance);
+    switch (event) {
+        case USART_EVENT_SEND_COMPLETE:
+            usart_send_complete = true;
+            break;
+        case USART_EVENT_RECEIVE_COMPLETE:
+            break;
+        case USART_EVENT_TRANSFER_COMPLETE:
+            break;
+        default:
+            return;
+    }
+}
+
+void USART1_IRQHandler(void)
+{
+    st_usart_hal_irq_handler(&usart1_handle);
 }

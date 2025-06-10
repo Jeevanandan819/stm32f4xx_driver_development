@@ -27,6 +27,9 @@ set(sources_SRCS ${sources_SRCS}
 	${CMAKE_CURRENT_SOURCE_DIR}/Src/syscall.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Src/sysmem.c
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/core/chip/src/system_stm32f4xx.c
+	${CMAKE_CURRENT_SOURCE_DIR}/mcu/drivers/peripheral/src/stm32f4xx_gpio.c
+	${CMAKE_CURRENT_SOURCE_DIR}/mcu/drivers/peripheral/src/stm32f4xx_usart.c
+	${CMAKE_CURRENT_SOURCE_DIR}/mcu/core/common/src/stm32f4xx_debug.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Startup/startup_stm32f411retx.s
 )
 
@@ -37,6 +40,7 @@ set(include_c_DIRS ${include_c_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/device/ST/STM32F4xx/inc
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/drivers/peripheral/inc
 	${CMAKE_CURRENT_SOURCE_DIR}/mcu/drivers/service/inc
+	${CMAKE_CURRENT_SOURCE_DIR}/config
 	${CMAKE_CURRENT_SOURCE_DIR}/Inc
 )
 set(include_cxx_DIRS ${include_cxx_DIRS}
